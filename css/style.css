@@ -1973,8 +1973,8 @@ input#nav-toggle:checked ~ #nav-menu {
 .w-full {
   width: 100%;
 }
-.\!max-w-\[300px\] {
-  max-width: 300px !important;
+.\!max-w-\[250px\] {
+  max-width: 250px !important;
 }
 .cursor-pointer {
   cursor: pointer;
@@ -3431,8 +3431,8 @@ table tbody {
     display: none;
   }
 
-  .md\:\!max-w-\[400px\] {
-    max-width: 400px !important;
+  .md\:\!max-w-\[350px\] {
+    max-width: 350px !important;
   }
 
   .md\:grid-cols-2 {
