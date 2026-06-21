@@ -1,7 +1,7 @@
 <!doctype html>
 <html
   itemscope
-  class="light"
+  class="dark"
   lang="en-us"
   itemtype="http://schema.org/WebPage">
   <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
@@ -30,11 +30,11 @@
 
 
 
-<link rel="shortcut icon" href="/images/favicon_hu_3f1f8c9d53f169de.png" type="image/x-icon">
-<link rel="icon" href="/images/favicon_hu_3f1f8c9d53f169de.png" type="image/x-icon">
-<link rel="icon" type="image/png" sizes="48x48" href="/images/favicon_hu_e292437733578321.png">
-<link rel="icon" type="image/png" sizes="96x96" href="/images/favicon_hu_3f1f8c9d53f169de.png">
-<link rel="apple-touch-icon" sizes="144x144" href="/images/favicon_hu_2e6ccb40d79667ad.png">
+<link rel="shortcut icon" href="/images/favicon_hu_c11345cc498a9505.png" type="image/x-icon">
+<link rel="icon" href="/images/favicon_hu_c11345cc498a9505.png" type="image/x-icon">
+<link rel="icon" type="image/png" sizes="48x48" href="/images/favicon_hu_9a29a06ba7bf90e.png">
+<link rel="icon" type="image/png" sizes="96x96" href="/images/favicon_hu_c11345cc498a9505.png">
+<link rel="apple-touch-icon" sizes="144x144" href="/images/favicon_hu_c6933bb9c9acc84f.png">
 
 
 
@@ -42,14 +42,6 @@
 
 
 
-
-<link rel="manifest" href="/manifest.webmanifest" />
-<meta
-  name="msapplication-TileColor"
-  content="#ddd" />
-<meta
-  name="theme-color"
-  content="#ffffff" />
 
 
 
@@ -81,6 +73,19 @@
 
 
 
+
+
+
+
+  
+
+
+
+
+
+
+
+
 <title>Pixel Bytes</title>
 
 
@@ -99,30 +104,16 @@
 
   <meta
     name="keywords"
-    content="Boilerplate, Hugo" />
+    content="personal blog, HPC, Machine Learning, tech stuff, Computer Vision, AI, CUDA, Python, Deep Learning" />
 
 
 
 
-<meta
-  name="description"
-  content="Hugo &amp; Tailwindcss Starter" />
+<meta name="description" content="Pixel-Bytes is a personal blog by Viswa Ravichandran. I write about High Performance Computing, Machine Learning, and other tech stuff." />
 
 
 
-  <meta name="author" content="zeon.studio" />
-
-
-
-
-
-
-  
-
-
-
-
-
+  <meta name="author" content="viswa.ravichandran" />
 
 
 
@@ -148,19 +139,19 @@
 
 
 <meta property="og:title" content="Pixel Bytes" />
-<meta property="og:description" content="Hugo &amp; Tailwindcss Starter" />
+<meta property="og:description" content="Pixel-Bytes is a personal blog by Viswa Ravichandran. I write about High Performance Computing, Machine Learning, and other tech stuff." />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="//localhost:1313/tags/c&#43;&#43;/" />
 
 
 <meta name="twitter:title" content="Pixel Bytes" />
-<meta name="twitter:description" content="Hugo &amp; Tailwindcss Starter" />
+<meta name="twitter:description" content="Pixel-Bytes is a personal blog by Viswa Ravichandran. I write about High Performance Computing, Machine Learning, and other tech stuff." />
 
 
-  <meta name="twitter:site" content="@zeon_studio" />
+  <meta name="twitter:site" content="@https://x.com/viswa_ravi_" />
 
 
-  <meta name="twitter:creator" content="@zeon.studio" />
+  <meta name="twitter:creator" content="@viswa.ravichandran" />
 
 
 
@@ -208,6 +199,11 @@
 
 
 
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@latest/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
+
 
     
     
@@ -234,7 +230,7 @@
 <script>
   (function () {
     const googleFont = document.createElement("link");
-    googleFont.href = "https://fonts.googleapis.com/css2?family=Heebo:wght@400;600&family=Signika:wght@500;700&display=swap";
+    googleFont.href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap";
     googleFont.type = "text/css";
     googleFont.rel = "stylesheet";
     document.head.appendChild(googleFont);
@@ -343,7 +339,6 @@
   class="header  z-30">
   <nav class="navbar container">
     
-    
     <div class="order-0">
       
       <a class="navbar-brand block" href="/">
@@ -429,9 +424,9 @@
       class="img img-light"
       width="70"
       height="32"
-      src="/images/logo_hu_c3a2d8e1f1c423d7.webp"
-      alt="Pixel-Bytes"
-      onerror="this.onerror=null;this.src='\/images\/logo_hu_5654464de91eb84.png';" />
+      src="/images/logo_hu_17cd06bba4982a16.webp"
+      alt="Viswa Ravichandran Blog"
+      onerror="this.onerror=null;this.src='\/images\/logo_hu_84f2dc06b2966914.png';" />
 
     <img
       fetchpriority="high"
@@ -439,16 +434,16 @@
       class="img img-dark"
       width="70"
       height="32"
-      src="/images/logo-darkmode_hu_c3a2d8e1f1c423d7.webp"
-      alt="Pixel-Bytes"
-      onerror="this.onerror=null;this.src='\/images\/logo-darkmode_hu_5654464de91eb84.png';" />
+      src="/images/logo-darkmode_hu_17cd06bba4982a16.webp"
+      alt="Viswa Ravichandran Blog"
+      onerror="this.onerror=null;this.src='\/images\/logo-darkmode_hu_84f2dc06b2966914.png';" />
   
   
 
 
       </a>
     </div>
-    
+
     
     <input id="nav-toggle" type="checkbox" class="hidden" />
     <label
@@ -502,6 +497,7 @@
         
       
 
+
       
       
     </ul>
@@ -513,7 +509,10 @@
           <button
             aria-label="search"
             
-            class="border-border text-dark hover:text-primary dark:border-darkmode-border mr-5 inline-block border-r lg:border-r-0 pr-5 lg:pr-0 text-xl dark:text-white dark:hover:text-darkmode-primary"
+              class="border-border text-dark hover:text-primary
+              dark:border-darkmode-border mr-5 inline-block border-r
+              lg:border-r-0 pr-5 lg:pr-0 text-xl dark:text-white
+              dark:hover:text-darkmode-primary"
             
             data-target="search-modal">
             <i class="fa-solid fa-search"></i>
@@ -522,6 +521,7 @@
       
 
       
+
 
       
 
@@ -701,79 +701,314 @@
           <div class="row">
             
               <div class="md:col-6 mb-14">
-                <div class="bg-body dark:bg-darkmode-body">
+                <article class="blog-list-card">
+  
+  
+    <a class="blog-list-media" href="/blog/cuda/kernels/reduction/">
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+
+
+  
+
+
+    </a>
+  
+
+  <div class="blog-list-content">
+    
+    
+      <p class="blog-list-categories">
+        
+          <a
+            href="/categories/cuda-adventures/"
+            class="taxonomy-inline-chip"
+          >Cuda adventures</a>
+        
+      </p>
+    
+
+    <h3 class="blog-list-title">
+      <a href="/blog/cuda/kernels/reduction/">CUDA Kernel Programming: Reduction</a>
+    </h3>
+
+    <p class="blog-list-summary">Reduction CPU Baseline Recursive Reduction - GPU Reduction with Interleaved Addressing - Divergent branches Reduction with Sequential Addressing - Bank Conflicts stall_wait is reduced by 2x, but the overall time is increased by 2x due to bank conflicts. This is because threads in the same warp access different memory addresses that map to the same memory bank, causing serialization of memory accesses and increasing latency. stall_wait → divergent warp, waiting for divergent threads to finish executing stall_barrier →wait on fixed latency exec dependency (harmless)
+</p>
+
+    <div class="blog-list-footer">
+      <a class="blog-list-link" href="/blog/cuda/kernels/reduction/">Read More</a>
+    </div>
+  </div>
+</article>
+
+              </div>
+            
+              <div class="md:col-6 mb-14">
+                <article class="blog-list-card">
+  
+  
+    <a class="blog-list-media" href="/blog/cuda/kernels/addition/">
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+  
+
   
   
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
-  
-  
-
-
-  
-
-
-  
-  <h4 class="mb-3">
-    <a href="/blog/2025/cuda-adventures/">
-      Vector Addition CUDA
-    </a>
-  </h4>
-  
-  
-    <ul class="mb-4">
       
-      <li class="mr-4 inline-block">
-        <i class="fa-regular fa-folder mr-1"></i>
+    
+
+
+    
+    
+
+
+    
+    
+      
+      
+    
+    
+    
+
+
+    
+    
+      
+      
+        
+
+        
+        
+        
+        
+        
+        
+        
+
+
+        
+        
+
+
+        <picture>
+          <source
+            
+              srcset="/blog/cuda/kernels/addition/vec_add_hu_f45528ca64f5a597.webp"
+            
+            media="(max-width: 575px)" />
+          <source
+            
+              srcset="/blog/cuda/kernels/addition/vec_add_hu_9abbef3dd8e4941.webp"
+            
+            media="(max-width: 767px)" />
+          <source
+            
+              srcset="/blog/cuda/kernels/addition/vec_add_hu_ef17b45787b461ff.webp"
+            
+            media="(max-width: 991px)" />
+          <source
+            
+              srcset="/blog/cuda/kernels/addition/vec_add_hu_f0ce7db719aad989.webp"
+             />
+          <img
+            
+              loading="lazy" decoding="async"
+              src="/blog/cuda/kernels/addition/vec_add_hu_90a9b2c98212ca27.png"
+            
+            
+            class=" blog-list-image img"
+            alt="Memory Latency Hiding in CUDA using Streams"
+            width="1912"
+            height="915" />
+        </picture>
+      
+      
+    
+    
+  
+
+
+  
+
+
+    </a>
+  
+
+  <div class="blog-list-content">
+    
+    
+      <p class="blog-list-categories">
         
           <a
-            href="/categories/python/"
-            class="ms-1"
-            >Python
-          </a>
+            href="/categories/cuda-adventures/"
+            class="taxonomy-inline-chip"
+          >Cuda adventures</a>
         
-      </li>
-    </ul>
-  
-  <p class="mb-6">When dealing with large datasets in Python, a common issue arises - processing takes too long. This can significantly slow down your data analysis workflow and hinder productivity. To optimize your code running time and speed up the process you’ll eventually consider Parallelization as one of the methods. In this article, we’ll explore how to use parallelization in Python to accelerate your data science.
+      </p>
+    
+
+    <h3 class="blog-list-title">
+      <a href="/blog/cuda/kernels/addition/">Memory Latency Hiding in CUDA using Streams</a>
+    </h3>
+
+    <p class="blog-list-summary">I’m starting a new CUDA project to deepen my understanding of GPU acceleration. I’ll begin with simple tasks like vector addition and move on to more involved projects, including image processing and language model optimizations. While this series won’t be a step-by-step tutorial, I’ll share the interesting parts of my implementations, highlighting the challenges I faced and the reasoning behind my decisions. For the complete code, feel free to check out the project repository.
 </p>
-  <a class="btn btn-outline-primary btn-sm" href="/blog/2025/cuda-adventures/">
-    Read More
-  </a>
-</div>
+
+    <div class="blog-list-footer">
+      <a class="blog-list-link" href="/blog/cuda/kernels/addition/">Read More</a>
+    </div>
+  </div>
+</article>
+
+              </div>
+            
+              <div class="md:col-6 mb-14">
+                <article class="blog-list-card">
+  
+  
+    <a class="blog-list-media" href="/blog/cuda/kernels/reduction-asm/">
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+
+
+  
+
+
+    </a>
+  
+
+  <div class="blog-list-content">
+    
+    
+      <p class="blog-list-categories">
+        
+          <a
+            href="/categories/cuda-adventures/"
+            class="taxonomy-inline-chip"
+          >Cuda adventures</a>
+        
+      </p>
+    
+
+    <h3 class="blog-list-title">
+      <a href="/blog/cuda/kernels/reduction-asm/">Reduction, Prefix sum</a>
+    </h3>
+
+    <p class="blog-list-summary">What I will explore in this post In the sections below, I will compare the PTX and SASS generated for a few variants of the vector addition kernel:
+</p>
+
+    <div class="blog-list-footer">
+      <a class="blog-list-link" href="/blog/cuda/kernels/reduction-asm/">Read More</a>
+    </div>
+  </div>
+</article>
 
               </div>
             
@@ -876,9 +1111,9 @@
       class="img img-light"
       width="70"
       height="32"
-      src="/images/logo_hu_c3a2d8e1f1c423d7.webp"
-      alt="Pixel-Bytes"
-      onerror="this.onerror=null;this.src='\/images\/logo_hu_5654464de91eb84.png';" />
+      src="/images/logo_hu_17cd06bba4982a16.webp"
+      alt="Viswa Ravichandran Blog"
+      onerror="this.onerror=null;this.src='\/images\/logo_hu_84f2dc06b2966914.png';" />
 
     <img
       fetchpriority="high"
@@ -886,9 +1121,9 @@
       class="img img-dark"
       width="70"
       height="32"
-      src="/images/logo-darkmode_hu_c3a2d8e1f1c423d7.webp"
-      alt="Pixel-Bytes"
-      onerror="this.onerror=null;this.src='\/images\/logo-darkmode_hu_5654464de91eb84.png';" />
+      src="/images/logo-darkmode_hu_17cd06bba4982a16.webp"
+      alt="Viswa Ravichandran Blog"
+      onerror="this.onerror=null;this.src='\/images\/logo-darkmode_hu_84f2dc06b2966914.png';" />
   
   
 
@@ -976,7 +1211,8 @@
   <div class="border-border dark:border-darkmode-border border-t py-7">
     <div class="text-light dark:text-darkmode-light container text-center">
       <p>
-        &copy; Viswa Ravichandran
+        &copy;
+        Viswa Ravichandran
       </p>
     </div>
   </div>
@@ -1068,10 +1304,6 @@
   src="/js/script-lazy.js"></script>
 
 
-
-<script>
-  if ('serviceWorker' in navigator){navigator.serviceWorker.register("/service-worker.js");}
-</script>
 
 
 

@@ -1,113 +1,2468 @@
-<!doctype html><html itemscope class=light lang=en-us itemtype=http://schema.org/WebPage><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=5"><meta name=theme-name content="hugoplate"><link rel="shortcut icon" href=/images/favicon_hu_c11345cc498a9505.png type=image/x-icon><link rel=icon href=/images/favicon_hu_c11345cc498a9505.png type=image/x-icon><link rel=icon type=image/png sizes=48x48 href=/images/favicon_hu_9a29a06ba7bf90e.png><link rel=icon type=image/png sizes=96x96 href=/images/favicon_hu_c11345cc498a9505.png><link rel=apple-touch-icon sizes=144x144 href=/images/favicon_hu_c6933bb9c9acc84f.png><title>Optimize CUDA Performance: Memory Latency Hiding with Streams</title><meta name=keywords content="personal blog,HPC,Machine Learning,tech stuff,Computer Vision,AI,CUDA,Python,Deep Learning"><meta name=description content="Discover how to enhance CUDA application performance by hiding memory latency using streams. Learn practical techniques and best practices"><meta name=author content="viswa.ravichandran"><meta property="og:image" content="/blog/cuda/streams/vec_add.png"><meta name=twitter:image content="/blog/cuda/streams/vec_add.png"><meta name=twitter:card content="summary_large_image"><meta property="og:image:width" content="1912"><meta property="og:image:height" content="915"><meta property="og:image:type" content="image/.png"><meta property="og:title" content="Optimize CUDA Performance: Memory Latency Hiding with Streams"><meta property="og:description" content="Discover how to enhance CUDA application performance by hiding memory latency using streams. Learn practical techniques and best practices"><meta property="og:type" content="website"><meta property="og:url" content="/blog/cuda/streams/"><meta name=twitter:title content="Optimize CUDA Performance: Memory Latency Hiding with Streams"><meta name=twitter:description content="Discover how to enhance CUDA application performance by hiding memory latency using streams. Learn practical techniques and best practices"><meta name=twitter:site content="@https://x.com/viswa_ravi_"><meta name=twitter:creator content="@viswa.ravichandran"><script>let indexURL="/searchindex.json",includeSectionsInSearch=["blog"],search_no_results="No results for",search_initial_message="Type something to search.."</script><meta http-equiv=x-dns-prefetch-control content="on"><link rel=preconnect href=https://use.fontawesome.com crossorigin><link rel=preconnect href=//cdnjs.cloudflare.com><link rel=preconnect href=//www.googletagmanager.com><link rel=preconnect href=//www.google-analytics.com><link rel=dns-prefetch href=https://use.fontawesome.com><link rel=dns-prefetch href=//ajax.googleapis.com><link rel=dns-prefetch href=//cdnjs.cloudflare.com><link rel=dns-prefetch href=//www.googletagmanager.com><link rel=dns-prefetch href=//www.google-analytics.com><link rel=dns-prefetch href=//fonts.googleapis.com><link rel=dns-prefetch href=//connect.facebook.net><link rel=dns-prefetch href=//platform.linkedin.com><link rel=dns-prefetch href=//platform.twitter.com><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600&family=Signika:wght@500;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script><link href="/css/style.min.dd4b49b919f086756c931a8a7eaaab881b5753e76fb9d7c53a7607e935dbab4c.css" integrity="sha256-3UtJuRnwhnVskxqKfqqriBtXU+dvudfFOnYH6TXbq0w=" rel=stylesheet><link defer async rel=stylesheet href="/css/style-lazy.min.1891ab9d1988b9b19756de1bbea47aecb95c7b5ab195f6fe52244b6eca5d8154.css" integrity="sha256-GJGrnRmIubGXVt4bvqR67Llce1qxlfb+UiRLbspdgVQ=" media=print onload='this.media="all",this.onload=null'></head><body><header class="header z-30"><nav class="navbar container"><div class=order-0><a class="navbar-brand block" href=/><img fetchpriority=high decoding=async class="img img-light" width=70 height=32 src=/images/logo_hu_17cd06bba4982a16.webp alt="Viswa Ravichandran Blog" onerror='this.onerror=null,this.src="/images/logo_hu_84f2dc06b2966914.png"'>
-<img fetchpriority=high decoding=async class="img img-dark" width=70 height=32 src=/images/logo-darkmode_hu_17cd06bba4982a16.webp alt="Viswa Ravichandran Blog" onerror='this.onerror=null,this.src="/images/logo-darkmode_hu_84f2dc06b2966914.png"'></a></div><input id=nav-toggle type=checkbox class=hidden>
-<label for=nav-toggle class="order-3 cursor-pointer flex items-center lg:hidden text-dark dark:text-white lg:order-1"><svg id="show-button" class="h-6 fill-current block" viewBox="0 0 20 20"><title>Menu Open</title><path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0V0z"/></svg>
-<svg id="hide-button" class="h-6 fill-current hidden" viewBox="0 0 20 20"><title>Menu Close</title><polygon points="11 9 22 9 22 11 11 11 11 22 9 22 9 11 -2 11 -2 9 9 9 9 -2 11 -2" transform="rotate(45 10 10)"/></svg></label><ul id=nav-menu class="navbar-nav order-3 hidden lg:flex w-full pb-6 lg:order-1 lg:w-auto lg:space-x-2 lg:pb-0 xl:space-x-8"><li class=nav-item><a class="nav-link text-lg" href=/>About</a></li><li class=nav-item><a class="nav-link text-lg" href=/blog>Blog</a></li></ul><div class="order-1 ml-auto flex items-center md:order-2 lg:ml-0"><button aria-label=search class="border-border text-dark hover:text-primary
-dark:border-darkmode-border mr-5 inline-block border-r
-lg:border-r-0 pr-5 lg:pr-0 text-xl dark:text-white
-dark:hover:text-darkmode-primary" data-target=search-modal>
-<i class="fa-solid fa-search"></i></button></div></nav></header><div class=search-modal aria-hidden=true style=--color-primary:#121212><div data-target=close-search-modal class=search-modal-overlay></div><div class=search-wrapper data-image=true data-description=true data-tags=true data-categories=true><div class=search-wrapper-header><label for=search-modal-input style=margin-top:-1px><span class=sr-only>search icon</span>
-<svg viewBox="0 0 512 512" height="18" width="18" class="search-icon" data-type="search"><path fill="currentColor" d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8.0 45.3s-32.8 12.5-45.3.0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9.0 208S93.1.0 208 0 416 93.1 416 208zM208 352a144 144 0 100-288 144 144 0 100 288z"/></svg>
-<svg viewBox="0 0 512 512" height="18" width="18" class="search-reset" data-type="reset"><path fill="currentColor" d="M256 512A256 256 0 10256 0a256 256 0 100 512zM175 175c9.4-9.4 24.6-9.4 33.9.0l47 47 47-47c9.4-9.4 24.6-9.4 33.9.0s9.4 24.6.0 33.9l-47 47 47 47c9.4 9.4 9.4 24.6.0 33.9s-24.6 9.4-33.9.0l-47-47-47 47c-9.4 9.4-24.6 9.4-33.9.0s-9.4-24.6.0-33.9l47-47-47-47c-9.4-9.4-9.4-24.6.0-33.9z"/></svg>
-</label><input id=search-modal-input type=text data-search-input autocomplete=off aria-label=Search placeholder="Search Post..."></div><div class=search-wrapper-body><div class=search-result data-search-result></div><span class=search-result-empty>Type something to search..</span></div><div class=search-wrapper-footer><span><kbd><svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M3.204 11h9.592L8 5.519 3.204 11zm-.753-.659 4.796-5.48a1 1 0 011.506.0l4.796 5.48c.566.647.106 1.659-.753 1.659H3.204a1 1 0 01-.753-1.659z"/></svg>
-</kbd><kbd><svg width="14" height="14" fill="currentColor" style="margin-top:1px" viewBox="0 0 16 16"><path d="M3.204 5h9.592L8 10.481 3.204 5zm-.753.659 4.796 5.48a1 1 0 001.506.0l4.796-5.48c.566-.647.106-1.659-.753-1.659H3.204a1 1 0 00-.753 1.659z"/></svg>
-</kbd>to navigate
-</span><span><kbd><svg width="12" height="12" fill="currentColor" style="display:inline-block" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M14.5 1.5a.5.5.0 01.5.5v4.8a2.5 2.5.0 01-2.5 2.5H2.707l3.347 3.346a.5.5.0 01-.708.708l-4.2-4.2a.5.5.0 010-.708l4-4a.5.5.0 11.708.708L2.707 8.3H12.5A1.5 1.5.0 0014 6.8V2a.5.5.0 01.5-.5z"/></svg>
-</kbd>to select
-</span><span class=search-result-info></span>
-<span data-target=close-search-modal><kbd>ESC</kbd> to close</span></div></div></div><main><section class="section pt-7"><div class=container><div class="row justify-center"><article class=lg:col-10><div class=mb-10><picture><source srcset=/blog/cuda/streams/vec_add_hu_f45528ca64f5a597.webp media="(max-width: 575px)"><source srcset=/blog/cuda/streams/vec_add_hu_9abbef3dd8e4941.webp media="(max-width: 767px)"><source srcset=/blog/cuda/streams/vec_add_hu_ef17b45787b461ff.webp media="(max-width: 991px)"><source srcset=/blog/cuda/streams/vec_add_hu_f0ce7db719aad989.webp><img loading=lazy decoding=async src=/blog/cuda/streams/vec_add_hu_90a9b2c98212ca27.png class="w-full rounded img" alt="Memory Latency Hiding in CUDA using Streams" width=1912 height=915></picture></div><h1 class="h2 mb-4">Memory Latency Hiding in CUDA using Streams</h1><ul class=mb-4><li class="mr-4 inline-block"><i class="fa-regular fa-folder mr-2"></i>
-<a href=/categories/cuda-adventures/>Cuda adventures</a></li><li class="mr-4 inline-block"><i class="fa-regular fa-clock mr-2"></i>
-April 4, 2022</li></ul><div class="content mb-10"><details open class="table-of-content blog"><summary>Table of Contents</summary><nav id=TableOfContents><ol><li><a href=#code-setup>Code Setup</a><ol><li><a href=#error-handling>Error Handling</a></li><li><a href=#memory-handling>Memory Handling</a></li><li><a href=#profiling-cuda-kernels>Profiling CUDA Kernels</a><ol><li><a href=#nsight-compute>Nsight Compute</a></li><li><a href=#nsight-systems>Nsight Systems</a></li></ol></li></ol></li><li><a href=#vector-addition-kernel>Vector Addition Kernel</a><ol><li><a href=#single-stream-processing>Single-Stream Processing</a></li><li><a href=#memory-latency-hiding-with-concurrent-streams>Memory Latency Hiding with Concurrent Streams</a><ol><li><a href=#memory-latency>Memory Latency</a></li><li><a href=#allocating-memory-for-multiple-streams>Allocating Memory for Multiple Streams</a></li><li><a href=#processing-chunks-in-parallel>Processing Chunks in Parallel</a></li></ol></li></ol></li></ol></nav></details><p>I’m starting a new CUDA project to deepen my understanding of GPU acceleration. I’ll begin with simple tasks like vector addition and move on to more involved projects, including image processing and language model optimizations. While this series won’t be a step-by-step tutorial, I’ll share the interesting parts of my implementations, highlighting the challenges I faced and the reasoning behind my decisions. For the complete code, feel free to check out the <a href=https://github.com/viswaravi/CUDA-Adventures target=_blank>project repository</a>.</p><p>In this first part, I&rsquo;ll be focusing in the implementation of a simple vector addition kernel, with a focus on optimizing memory latency. All my experiments will be conducted on an RTX 2060 GPU.</p><h2 id=code-setup>Code Setup</h2><h3 id=error-handling>Error Handling</h3><p>In CUDA, most function calls return a status code of type <strong>cudaError_t</strong> to indicate success or failure. Checking the result of every single call can make your code unreadable. A common technique is to use a macro that wraps the function calls in error-checking logic. In my implementation, any error triggers a runtime exception, which can be caught and handled appropriately:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-Cpp data-lang=Cpp><span style=display:flex><span><span style=color:#66d9ef>inline</span> <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>checkCuda</span>(cudaError_t result, <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>char</span><span style=color:#f92672>*</span> func, <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>char</span><span style=color:#f92672>*</span> file, <span style=color:#66d9ef>int</span> line) {
-</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (result <span style=color:#f92672>!=</span> cudaSuccess) {
-</span></span><span style=display:flex><span>        <span style=color:#66d9ef>throw</span> std<span style=color:#f92672>::</span>runtime_error(
-</span></span><span style=display:flex><span>            std<span style=color:#f92672>::</span>string(<span style=color:#e6db74>&#34;CUDA error at &#34;</span>) <span style=color:#f92672>+</span> file <span style=color:#f92672>+</span> <span style=color:#e6db74>&#34;:&#34;</span> <span style=color:#f92672>+</span> std<span style=color:#f92672>::</span>to_string(line) <span style=color:#f92672>+</span>
-</span></span><span style=display:flex><span>            <span style=color:#e6db74>&#34; (&#34;</span> <span style=color:#f92672>+</span> func <span style=color:#f92672>+</span> <span style=color:#e6db74>&#34;): &#34;</span> <span style=color:#f92672>+</span> cudaGetErrorString(result)
-</span></span><span style=display:flex><span>        );
-</span></span><span style=display:flex><span>    }
-</span></span><span style=display:flex><span>}
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#75715e>#define CUDA_CALL(func) checkCuda((func), #func, __FILE__, __LINE__)
-</span></span></span></code></pre></div><h3 id=memory-handling>Memory Handling</h3><p>If a runtime error occurs, the application might exit before you can manually free any allocated memory. To avoid leaks, I use a RAII (Resource Acquisition Is Initialization) wrapper for device memory. It automatically releases GPU memory when it goes out of scope or if the application terminates unexpectedly:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#66d9ef>template</span> <span style=color:#f92672>&lt;</span><span style=color:#66d9ef>typename</span> T<span style=color:#f92672>&gt;</span>
-</span></span><span style=display:flex><span><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>CudaMemory</span> {
-</span></span><span style=display:flex><span><span style=color:#66d9ef>public</span><span style=color:#f92672>:</span>
-</span></span><span style=display:flex><span>    <span style=color:#66d9ef>explicit</span> CudaMemory(size_t size)
-</span></span><span style=display:flex><span>    {
-</span></span><span style=display:flex><span>        ptr <span style=color:#f92672>=</span> <span style=color:#66d9ef>nullptr</span>;
-</span></span><span style=display:flex><span>        CUDA_CALL(cudaMalloc((<span style=color:#66d9ef>void</span><span style=color:#f92672>**</span>)<span style=color:#f92672>&amp;</span>ptr, size));
-</span></span><span style=display:flex><span>    }
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>    <span style=color:#75715e>// Prevent copying
-</span></span></span><span style=display:flex><span>    CudaMemory(<span style=color:#66d9ef>const</span> CudaMemory<span style=color:#f92672>&amp;</span>) <span style=color:#f92672>=</span> <span style=color:#66d9ef>delete</span>;
-</span></span><span style=display:flex><span>    CudaMemory<span style=color:#f92672>&amp;</span> <span style=color:#66d9ef>operator</span><span style=color:#f92672>=</span>(<span style=color:#66d9ef>const</span> CudaMemory<span style=color:#f92672>&amp;</span>) <span style=color:#f92672>=</span> <span style=color:#66d9ef>delete</span>;
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>    <span style=color:#75715e>// Allow Moving
-</span></span></span><span style=display:flex><span>    CudaMemory(CudaMemory<span style=color:#f92672>&amp;&amp;</span> other) <span style=color:#66d9ef>noexcept</span> <span style=color:#f92672>:</span> ptr(other.ptr) { other.ptr <span style=color:#f92672>=</span> <span style=color:#66d9ef>nullptr</span>; }
-</span></span><span style=display:flex><span>    CudaMemory<span style=color:#f92672>&amp;</span> <span style=color:#66d9ef>operator</span><span style=color:#f92672>=</span>(CudaMemory<span style=color:#f92672>&amp;&amp;</span> other) <span style=color:#66d9ef>noexcept</span> {
-</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> (<span style=color:#66d9ef>this</span> <span style=color:#f92672>!=</span> <span style=color:#f92672>&amp;</span>other) {
-</span></span><span style=display:flex><span>            <span style=color:#66d9ef>if</span> (ptr) cudaFree(ptr);
-</span></span><span style=display:flex><span>            ptr <span style=color:#f92672>=</span> other.ptr;
-</span></span><span style=display:flex><span>            other.ptr <span style=color:#f92672>=</span> <span style=color:#66d9ef>nullptr</span>;
-</span></span><span style=display:flex><span>        }
-</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#f92672>*</span><span style=color:#66d9ef>this</span>;
-</span></span><span style=display:flex><span>    }
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>    <span style=color:#f92672>~</span>CudaMemory() {  <span style=color:#66d9ef>if</span> (ptr) cudaFree(ptr); }
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>    T<span style=color:#f92672>*</span> <span style=color:#a6e22e>get</span>() <span style=color:#66d9ef>const</span> { <span style=color:#66d9ef>return</span> ptr; }
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#66d9ef>private</span><span style=color:#f92672>:</span>
-</span></span><span style=display:flex><span>    T<span style=color:#f92672>*</span> ptr;
-</span></span><span style=display:flex><span>};
-</span></span></code></pre></div><h3 id=profiling-cuda-kernels>Profiling CUDA Kernels</h3><h4 id=nsight-compute>Nsight Compute</h4><p>This tool focuses on kernel-level performance metrics, like memory bandwidth, occupancy, and warp efficiency. You can analyze individual kernels in detail, identify bottlenecks (e.g., memory-bound vs. compute-bound). Nsight Compute replays kernel executions in multiple passes, collecting different sets of data each time. This approach aims to minimize performance overhead during any single run. It supports several profiling modes:</p><table><thead><tr><th style=text-align:center>Profiling Mode</th><th style=text-align:center>How it works</th><th style=text-align:center>When to use</th></tr></thead><tbody><tr><td style=text-align:center>Kernel Replay</td><td style=text-align:center>Replays only the kernel execution. Saves GPU memory state before each kernel run and restores it before each subsequent replay pass.</td><td style=text-align:center>Great for fast profiling when memory usage isn’t a concern. It can, however, double your memory usage.</td></tr><tr><td style=text-align:center>Application Replay</td><td style=text-align:center>Instead of saving and restoring memory states, relaunches the entire application for each pass</td><td style=text-align:center>This approach requires that the application can produce consistent results across multiple runs and that relaunching the application is feasible in terms of time and resources.</td></tr></tbody></table><h4 id=nsight-systems>Nsight Systems</h4><p>If you need a broader view that includes CPU-GPU concurrency, multi-threaded host code, and system-level timing, Nsight Systems is often more appropriate. It shows how different streams and tasks overlap, where synchronization points occur, and how host threads and device activity line up in a timeline. In other words, Nsight Systems is more about your application&rsquo;s “big picture,” while Nsight Compute is a deep-dive into a specific kernel’s performance characteristics.</p><blockquote><p><strong>Profiling Mode</strong> - Always profile the kernels in Release mode if you are using Visual Studio instead of Debug mode for accurate performance.</p></blockquote><h2 id=vector-addition-kernel>Vector Addition Kernel</h2><p>The actual vector addition kernel is straightforward. It reads from two input vectors and writes the sum into a third vector. The only extra detail is a boundary check. This is a compute light and memory bound task.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span>__global__ <span style=color:#66d9ef>void</span> <span style=color:#a6e22e>addKernel</span>(<span style=color:#66d9ef>int</span><span style=color:#f92672>*</span> c, <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>int</span><span style=color:#f92672>*</span> a, <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>int</span><span style=color:#f92672>*</span> b, <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>unsigned</span> <span style=color:#66d9ef>long</span> <span style=color:#66d9ef>long</span> length)
-</span></span><span style=display:flex><span>{
-</span></span><span style=display:flex><span>    <span style=color:#66d9ef>unsigned</span> <span style=color:#66d9ef>long</span> <span style=color:#66d9ef>long</span> idx <span style=color:#f92672>=</span> (blockIdx.x <span style=color:#f92672>*</span> blockDim.x) <span style=color:#f92672>+</span> threadIdx.x;
-</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> (idx <span style=color:#f92672>&lt;</span> length)
-</span></span><span style=display:flex><span>    {
-</span></span><span style=display:flex><span>        c[idx] <span style=color:#f92672>=</span> a[idx] <span style=color:#f92672>+</span> b[idx];
-</span></span><span style=display:flex><span>    }
-</span></span><span style=display:flex><span>}
-</span></span></code></pre></div><h3 id=single-stream-processing>Single-Stream Processing</h3><p>When your data fully fits in device memory <strong>(Memory for A + Memory for B + Memory for C)</strong>, you can load it into the GPU, run one kernel, and then copy results back. By default, CUDA uses a single stream, so <strong>Host-to-Device (H2D) transfer → Kernel execution → Device-to-Host (D2H)</strong> transfer all happen sequentially.</p><p>However, if you have large data sets that don’t fit into device memory at once, you’ll need to split the data into smaller chunks. Each chunk is transferred, processed, and transferred back in a loop. The memory allocation for chunked vector addition is shown below.<figure class=img-center role=group aria-describedby="caption-Memory allocation for single stream execution in chunks"><img title="image title" loading=lazy decoding=async class="img img-fluid" width=2369 height=583 src=/blog/cuda/streams/vec_add_chunk_hu_2d50a16f503c15f1.png alt=alter-text onerror='this.onerror="null",this.src="/blog/cuda/streams/vec_add_chunk_hu_2d50a16f503c15f1.png"'><figcaption id="caption-Memory allocation for single stream execution in chunks" class=caption-Memory-allocation-for-single-stream-execution-in-chunks>Memory allocation for single stream execution in chunks</figcaption></figure><script>window.addEventListener("load",e=>{const t=GLightbox()})</script></p><p>By profiling the application through Nsight Compute, we can obtain the GPU utilization chart, which shows the speed of light (SOL) throughput for both memory and compute operations, as illustrated below. From the chart, we can infer that the vector addition kernel is <strong>memory bandwidth bound</strong> with high memory utilization (85%) compared to the compute utilization (20%).</p><figure class=img-center role=group aria-describedby="caption-GPU Throughput Chart"><img title="image title" loading=lazy decoding=async class="img img-fluid" width=1867 height=207 src=/blog/cuda/streams/gpu_throughput_hu_a387ddcb945ba784.png alt=alter-text onerror='this.onerror="null",this.src="/blog/cuda/streams/gpu_throughput_hu_a387ddcb945ba784.png"'><figcaption id="caption-GPU Throughput Chart" class=caption-GPU-Throughput-Chart>GPU Throughput Chart</figcaption></figure><p>Nsight Systems Trace of the application will reveal further insights. The kernel computation and memory transfer timeline can be viewed from the trace of the program execution as shown below, where multiple <strong>Load → Execute → Store</strong> operations are sequentially executed.</p><figure class=img-center role=group aria-describedby="caption-Single stream execution using Pageable memory"><img title="image title" loading=lazy decoding=async class="img img-fluid" width=1081 height=190 src=/blog/cuda/streams/chunked_hu_768d402a3eecef3a.png alt=alter-text onerror='this.onerror="null",this.src="/blog/cuda/streams/chunked_hu_768d402a3eecef3a.png"'><figcaption id="caption-Single stream execution using Pageable memory" class=caption-Single-stream-execution-using-Pageable-memory>Single stream execution using Pageable memory</figcaption></figure><p>Because this approach runs each step in sequence, we can see that the GPU is sitting idle, waiting for memory transfers before executing kernel for each chunk of information. Thus, we need to “hide” these memory latencies by overlapping transfers with computation. Because each thread is doing just one or a few arithmetic operations per memory transaction, the key to improving performance is keeping the memory subsystem as busy as possible.</p><h3 id=memory-latency-hiding-with-concurrent-streams>Memory Latency Hiding with Concurrent Streams</h3><h4 id=memory-latency>Memory Latency</h4><p>Memory latency is the delay between the moment a processor (in this case, a GPU core or “thread”) requests data from memory and the moment that data actually arrives. Even though modern GPUs have incredibly high bandwidth—meaning they can move a lot of data per second—they still face latency because it takes time for each request to travel from the GPU’s on-chip cores out to the external memory chips (like GDDR6) and back. In our case, we need to transfer vector data from host memory (RAM/Disk File) to the device memory and then access it and transferring huge chunk of data per kernel executing is stalling the compute units.</p><blockquote><p><strong>Memory Latency</strong>: The number of cycles needed to perform memory loads/stores.</p></blockquote><p>One effective way to hide memory latency is to use multiple streams. With concurrent streams, you can start transferring data for the next chunk while the current chunk is still being processed. This lets the GPU overlap Host-to-Device (H2D) transfers, kernel execution, and Device-to-Host (D2H) transfers.</p><h4 id=allocating-memory-for-multiple-streams>Allocating Memory for Multiple Streams</h4><p>First, we need to allocate separate device memory locations for each stream. This can be done by querying the total available free memory on the device and then splitting it across each stream as follows:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span>size_t free_mem;
-</span></span><span style=display:flex><span>CUDA_CALL(cudaMemGetInfo(<span style=color:#f92672>&amp;</span>free_mem, <span style=color:#66d9ef>nullptr</span>)); <span style=color:#75715e>// query free memory
-</span></span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#75715e>// compute maximum vector length that can fit into device memory per chunk
-</span></span></span><span style=display:flex><span>size_t total_max_mem <span style=color:#f92672>=</span> free_mem <span style=color:#f92672>*</span> free_mem_threshold; <span style=color:#75715e>// Limit memory usage in GPU
-</span></span></span><span style=display:flex><span><span style=color:#66d9ef>int</span> num_vecs_in_device <span style=color:#f92672>=</span> <span style=color:#ae81ff>3</span> <span style=color:#f92672>*</span> num_streams; <span style=color:#75715e>// A,B,C for each N Streams
-</span></span></span><span style=display:flex><span>size_t vec_max_mem <span style=color:#f92672>=</span> total_max_mem <span style=color:#f92672>/</span> num_vecs_in_device;
-</span></span><span style=display:flex><span>size_t vec_max_len <span style=color:#f92672>=</span> vec_max_mem <span style=color:#f92672>/</span> <span style=color:#66d9ef>sizeof</span>(<span style=color:#66d9ef>int</span>);
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#75715e>// compute chunk config
-</span></span></span><span style=display:flex><span><span style=color:#66d9ef>unsigned</span> <span style=color:#66d9ef>long</span> <span style=color:#66d9ef>long</span> chunk_len <span style=color:#f92672>=</span> vec_max_len <span style=color:#f92672>-</span> (vec_max_len <span style=color:#f92672>%</span> MAX_BLOCK_DIM); <span style=color:#75715e>// Making sure chunks can be divided into max block dim
-</span></span></span><span style=display:flex><span>size_t chunk_num <span style=color:#f92672>=</span> array_len <span style=color:#f92672>/</span> chunk_len; <span style=color:#75715e>// Total number of chunks to be processed
-</span></span></span><span style=display:flex><span><span style=color:#66d9ef>int</span> chunk_mem_size <span style=color:#f92672>=</span> chunk_len <span style=color:#f92672>*</span> <span style=color:#66d9ef>sizeof</span>(<span style=color:#66d9ef>int</span>);
-</span></span></code></pre></div><p>For executing vector addition with 2 streams, the device memory is allocated as shown in the image below. It&rsquo;s important to note that dividing the available device memory among streams means each stream processes less data at once compared to a single stream execution.</p><figure class=img-center role=group aria-describedby="caption-Multi stream execution using Pinned Memory"><img title="image title" loading=lazy decoding=async class="img img-fluid" width=2369 height=583 src=/blog/cuda/streams/vec_add_stream_hu_18bd2f9efa4b5928.png alt=alter-text onerror='this.onerror="null",this.src="/blog/cuda/streams/vec_add_stream_hu_18bd2f9efa4b5928.png"'><figcaption id="caption-Multi stream execution using Pinned Memory" class=caption-Multi-stream-execution-using-Pinned-Memory>Multi stream execution using Pinned Memory</figcaption></figure><h4 id=processing-chunks-in-parallel>Processing Chunks in Parallel</h4><p>Once you’ve set up the device allocations for each stream, you can distribute chunks to them in a nested loop. For every batch of chunks (limited by the number of streams), you transfer data to the device, run the kernel, and transfer the results back asynchronously:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=display:flex><span><span style=color:#75715e>// Process Vector in Stream Chunks
-</span></span></span><span style=display:flex><span><span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>int</span> chunk_index <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>; chunk_index <span style=color:#f92672>&lt;</span> chunk_num; chunk_index <span style=color:#f92672>=</span> chunk_index <span style=color:#f92672>+</span> num_streams)
-</span></span><span style=display:flex><span>{
-</span></span><span style=display:flex><span>    <span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>int</span> stream_index <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>; stream_index <span style=color:#f92672>&lt;</span> num_streams; stream_index<span style=color:#f92672>++</span>)
-</span></span><span style=display:flex><span>    {
-</span></span><span style=display:flex><span>        <span style=color:#66d9ef>int</span> chunk_offset <span style=color:#f92672>=</span> (chunk_index<span style=color:#f92672>+</span>stream_index) <span style=color:#f92672>*</span> chunk_len;
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>        <span style=color:#75715e>// Transfer Data to GPU Stream
-</span></span></span><span style=display:flex><span>        CUDA_CALL(cudaMemcpyAsync(dev_a[stream_index].get(), h_A <span style=color:#f92672>+</span> chunk_offset, chunk_mem_size, cudaMemcpyHostToDevice, streams[stream_index]));
-</span></span><span style=display:flex><span>        CUDA_CALL(cudaMemcpyAsync(dev_b[stream_index].get(), h_B <span style=color:#f92672>+</span> chunk_offset, chunk_mem_size, cudaMemcpyHostToDevice, streams[stream_index]));
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>        <span style=color:#75715e>// Kernel
-</span></span></span><span style=display:flex><span>        addKernel<span style=color:#f92672>&lt;&lt;&lt;</span>gridDim, blockDim, <span style=color:#ae81ff>0</span>, streams[stream_index]<span style=color:#f92672>&gt;&gt;&gt;</span>(dev_c[stream_index].get(), dev_a[stream_index].get(), dev_b[stream_index].get(), chunk_len);
-</span></span><span style=display:flex><span>        <span style=color:#75715e>// Check for any errors launching the kernel
-</span></span></span><span style=display:flex><span>        CUDA_CALL(cudaGetLastError());
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span>        <span style=color:#75715e>// Transfer back to Host
-</span></span></span><span style=display:flex><span>        CUDA_CALL(cudaMemcpyAsync(h_C <span style=color:#f92672>+</span> chunk_offset, dev_c[stream_index].get(), chunk_mem_size, cudaMemcpyDeviceToHost, streams[stream_index]));
-</span></span><span style=display:flex><span>    }
-</span></span><span style=display:flex><span>}
-</span></span></code></pre></div><p>The following image shows Nsight system trace of multi stream execution, which shows that the second chunks H2D transfer starts even when the first chunk is still executing the kernel. Thus, while one stream is waiting on memory transfers, other streams can keep CUDA cores active.</p><figure class=img-center role=group aria-describedby="caption-Memory allocation for Multi stream execution in chunks"><img title="image title" loading=lazy decoding=async class="img img-fluid" width=993 height=103 src=/blog/cuda/streams/multistream_hu_bcbd498f02d98857.png alt=alter-text onerror='this.onerror="null",this.src="/blog/cuda/streams/multistream_hu_bcbd498f02d98857.png"'><figcaption id="caption-Memory allocation for Multi stream execution in chunks" class=caption-Memory-allocation-for-Multi-stream-execution-in-chunks>Memory allocation for Multi stream execution in chunks</figcaption></figure><blockquote><p><strong>Memory transfer overlapping</strong> - Modern NVIDIA GPUs have separate Direct Memory Access (DMA) engines for handling H2D and D2H transfers. Since these engines operate independently, H2D and D2H can run concurrently. But if you launch two H2D transfers or two D2H transfers, they must compete for the same DMA engine, causing serialization.</p></blockquote><p>Below is a performance comparison chart for large vectors (536870912 integers, or 2GB of memory). Note how multiple streams significantly reduce total execution time:</p><table><thead><tr><th style=text-align:center>Host Memory</th><th style=text-align:center>Streams</th><th style=text-align:center>GPU Duration</th><th style=text-align:center>Memory Throughput(Gbyte/s)</th><th style=text-align:center>Mem Busy(%)</th></tr></thead><tbody><tr><td style=text-align:center>Pageable Memory</td><td style=text-align:center>1</td><td style=text-align:center>3.86 ms</td><td style=text-align:center>277.19</td><td style=text-align:center>39.66</td></tr><tr><td style=text-align:center>Pinned Memory</td><td style=text-align:center>1</td><td style=text-align:center>3.87 ms</td><td style=text-align:center>278.40</td><td style=text-align:center>39.76</td></tr><tr><td style=text-align:center>Pinned Memory</td><td style=text-align:center>2</td><td style=text-align:center>1.94 ms</td><td style=text-align:center>277.04</td><td style=text-align:center>39.29</td></tr><tr><td style=text-align:center>Pinned Memory</td><td style=text-align:center>3</td><td style=text-align:center>1.29 ms</td><td style=text-align:center>277.87</td><td style=text-align:center>39.58</td></tr><tr><td style=text-align:center>Pinned Memory</td><td style=text-align:center>4</td><td style=text-align:center>972.19 µs</td><td style=text-align:center>275.42</td><td style=text-align:center>39.50</td></tr></tbody></table><p>By creating multiple streams, you effectively keep the GPU’s SMs (Streaming Multiprocessors) busier, reduce idle cycles, and boost overall efficiency. Increasing streams from 1 (3.87 ms) to 4 (0.972 µs) cuts the execution time dramatically—by about 75%.</p><figure class=img-center role=group aria-describedby="caption-Execution Time vs. Number of Streams in CUDA"><img title="image title" loading=lazy decoding=async class="img img-fluid" width=691 height=470 src=/blog/cuda/streams/exec_time_plot_hu_dbcb4af3059caf7a.png alt=alter-text onerror='this.onerror="null",this.src="/blog/cuda/streams/exec_time_plot_hu_dbcb4af3059caf7a.png"'><figcaption id="caption-Execution Time vs. Number of Streams in CUDA" class=caption-Execution-Time-vs-Number-of-Streams-in-CUDA>Execution Time vs. Number of Streams in CUDA</figcaption></figure><p><strong>Multiple Streams Overlap Transfers and Computations:</strong> When you add multiple streams (2, 3, or 4), you see a substantial drop in execution time (down to ~972 µs with four streams), but the throughput and Mem busy percentage remain in a similar range. The main gain here isn’t in speeding up the memory transfers themselves—it’s in hiding memory latency so that the GPU is doing useful work instead of waiting.</p><hr><p>That wraps up the first part of this series. Stay tuned for more insights as I explore GPU acceleration and tackle increasingly complex tasks!</p></div><div class="row items-start justify-between"><div class="lg:col-5 mb-10 flex items-center lg:mb-0"><h5 class=mr-3>Tags :</h5><ul><li class=inline-block><a class="bg-theme-light hover:bg-primary dark:bg-darkmode-theme-light dark:hover:bg-darkmode-primary dark:hover:text-dark m-1 block rounded px-3 py-1 hover:text-white" href=/tags/cpp/>Cpp</a></li><li class=inline-block><a class="bg-theme-light hover:bg-primary dark:bg-darkmode-theme-light dark:hover:bg-darkmode-primary dark:hover:text-dark m-1 block rounded px-3 py-1 hover:text-white" href=/tags/cuda/>Cuda</a></li></ul></div><div class="lg:col-4 flex items-center"><div class=share-icons><a class="share-link share-facebook" href="https://facebook.com/sharer/sharer.php?u=%2fblog%2fcuda%2fstreams%2f" target=_blank rel=noopener aria-label="share facebook"><span class=share-icon><svg viewBox="0 0 24 24"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/></svg>
-</span></a><a class="share-link share-x" href="https://x.com/intent/tweet/?text=Share&amp;url=%2fblog%2fcuda%2fstreams%2f" target=_blank rel=noopener aria-label="share x"><span aria-hidden=true class=share-icon><svg viewBox="0 0 24 24"><path d="M8 2H1l8.26 11.015L1.45 22H4.1l6.388-7.349L16 22h7l-8.608-11.478L21.8 2h-2.65l-5.986 6.886zm9 18L5 4h2l12 16z"/></svg>
-</span></a><a class="share-link share-email" href="mailto:?subject=Share&amp;body=%2fblog%2fcuda%2fstreams%2f" target=_self rel=noopener aria-label="share email"><span aria-hidden=true class=share-icon><svg viewBox="0 0 24 24"><path d="M22 4H2C.9 4 0 4.9.0 6v12c0 1.1.9 2 2 2h20c1.1.0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17.0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1.0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08.0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z"/></svg>
-</span></a><a class="share-link share-reddit" href="https://reddit.com/submit/?url=%2fblog%2fcuda%2fstreams%2f&amp;resubmit=true&amp;title=Share" target=_blank rel=noopener aria-label="share reddit"><span aria-hidden=true class=share-icon><svg viewBox="0 0 24 24"><path d="M24 11.5c0-1.65-1.35-3-3-3-.96.0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65.0 3-1.35 3-3s-1.35-3-3-3c-1.38.0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65.0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66.0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64.0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4.0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6.0.23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1.0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.97-.82 1.6-.82 1.1.0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z"/></svg>
-</span></a><span class=fediverse-share><a class="share-link share-fediverse" href=javascript:void(0); onclick=toggleFediverseInput(this) aria-label="share fediverse"><span aria-hidden=true class=share-icon><svg viewBox="-10 -5 1034 1034" xmlns:xlink="http://www.w3.org/1999/xlink"><g id="SVGRepo_bgCarrier" stroke-width="0"/><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"/><g id="SVGRepo_iconCarrier"><path d="M539 176q-32 0-55 22t-25 55 20.5 58 56 27 58.5-20.5 27-56-20.5-59T544 176h-5zm-87 95-232 118q20 20 25 48l231-118q-19-20-24-48zm167 27q-13 25-38 38l183 184q13-25 39-38zM477 320 342 585l40 40 143-280q-28-5-48-25zm104 16q-22 11-46 10l-8-1 21 132 56 9zM155 370q-32 0-55 22.5t-25 55 20.5 58 56.5 27 59-21 26.5-56-21-58.5-55.5-27h-6zm90 68q1 9 1 18-1 19-10 35l132 21 26-50zm225 36-26 51 311 49q-1-8-1-17 1-19 10-36zm372 6q-32 1-55 23t-24.5 55 21 58 56 27 58.5-20.5 27-56.5-20.5-59-56.5-27h-6zM236 493q-13 25-39 38l210 210 51-25zm-40 38q-21 11-44 10l-9-1 40 256q21-10 45-9l8 1zm364 22 48 311q21-10 44-9l10 1-46-294zm195 23-118 60 8 56 135-68q-20-20-25-48zm26 49-119 231q28 5 48 25l119-231q-28-5-48-25zM306 654l-68 134q28 5 48 25l60-119zm262 17-281 143q19 20 24 48l265-135zM513 771l-51 25 106 107q13-25 39-38zM222 795q-32 0-55.5 22.5t-25 55 21 57.5 56 27 58.5-20.5 27-56-20.5-58.5-56.5-27h-5zm89 68q2 9 1 18-1 19-9 35l256 41q-1-9-1-18 1-18 10-35zm335 0q-32 0-55 22.5t-24.5 55 20.5 58 56 27 59-21 27-56-20.5-58.5-56.5-27h-6z"/></g></svg>
-</span></a><span class=fediverse-input-wrapper style=display:none><input type=text placeholder="Enter Fediverse Instance URL" class=fediverse-input onkeypress='handleFediverseShare(event,"/blog/cuda/streams/","Share")'>
-<button class=fediverse-check-button onclick='handleFediverseShareButton(this,"/blog/cuda/streams/","Share")'>
-Share
-</button>
-</span></span><button class="share-link share-copy" onclick='copyToClipboard(this,"/blog/cuda/streams/")'>
-<span class=share-icon><svg viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1.0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1.0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7-1c.55.0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 17H5V5h14v14z"/></svg></span></button></div><script>function toggleFediverseInput(e){const n=e.closest(".fediverse-share"),t=n.querySelector(".fediverse-input-wrapper");t.style.display=t.style.display==="none"?"block":"none"}function handleFediverseShare(e,t,n){if(e.key==="Enter"){const o=e.target;let s=o.value.trim();if(s){s.startsWith("https://")||(s=`https://${s}`);const e=`${s}/share?text=${encodeURIComponent(n)}&url=${encodeURIComponent(t)}`;window.open(e,"_blank","noopener")}}}function handleFediverseShareButton(e,t,n){const o=e.previousElementSibling;let s=o.value.trim();if(s){s.startsWith("https://")||(s=`https://${s}`);const e=`${s}/share?text=${encodeURIComponent(n)}&url=${encodeURIComponent(t)}`;window.open(e,"_blank","noopener")}}function copyToClipboard(e,t){navigator.clipboard.writeText(t).then(()=>{const t=e.querySelector("svg path"),n="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7-1c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 17H5V5h14v14z",s="M9 16.2l-3.5-3.5-1.4 1.4L9 19 20 8l-1.4-1.4L9 16.2z";t.setAttribute("d",s),setTimeout(()=>{t.setAttribute("d",n)},1e3)})}</script></div></div></article></div></div></section></main><footer class="bg-theme-light dark:bg-darkmode-body"><div class=container><div class="row items-center py-10"><div class="lg:col-3 mb-8 text-center lg:mb-0 lg:text-left"><a class="navbar-brand inline-block" href=/><img fetchpriority=high decoding=async class="img img-light" width=70 height=32 src=/images/logo_hu_17cd06bba4982a16.webp alt="Viswa Ravichandran Blog" onerror='this.onerror=null,this.src="/images/logo_hu_84f2dc06b2966914.png"'>
-<img fetchpriority=high decoding=async class="img img-dark" width=70 height=32 src=/images/logo-darkmode_hu_17cd06bba4982a16.webp alt="Viswa Ravichandran Blog" onerror='this.onerror=null,this.src="/images/logo-darkmode_hu_84f2dc06b2966914.png"'></a></div><div class="lg:col-6 mb-8 text-center lg:mb-0"><ul><li class="m-3 inline-block"><a href=/>About</a></li><li class="m-3 inline-block"><a href=/blog>Blog</a></li><li class="m-3 inline-block"><a href=/contact>Contact</a></li></ul></div><div class="lg:col-3 mb-8 text-center lg:mb-0 lg:mt-0 lg:text-right"><ul class=social-icons><li><a target=_blank aria-label=twitter rel="nofollow noopener" href=https://x.com/viswa_ravi_><i class="fab fa-twitter"></i></a></li><li><a target=_blank aria-label=github rel="nofollow noopener" href=https://github.com/viswaravi><i class="fab fa-github"></i></a></li><li><a target=_blank aria-label=linkedin rel="nofollow noopener" href=https://www.linkedin.com/in/viswa-ravichandran-1471b5126/><i class="fab fa-linkedin"></i></a></li></ul></div></div></div><div class="border-border dark:border-darkmode-border border-t py-7"><div class="text-light dark:text-darkmode-light container text-center"><p>&copy;
-Viswa Ravichandran</p></div></div></footer><script crossorigin=anonymous integrity="sha256-zUUY1J7EbAs1/ZcmAVuDi+kVdyetlVJGGkSznCrrBXM=" src=/js/script.min.cd4518d49ec46c0b35fd9726015b838be9157727ad9552461a44b39c2aeb0573.js></script><script defer async crossorigin=anonymous integrity="sha256-Tepkyiz3fPNRN5b/zeXpMa+kXqPe6OTOVk+Kdey5R0k=" src=/js/script-lazy.min.4dea64ca2cf77cf3513796ffcde5e931afa45ea3dee8e4ce564f8a75ecb94749.js></script></body></html>
+<!doctype html>
+<html
+  itemscope
+  class="dark"
+  lang="en-us"
+  itemtype="http://schema.org/WebPage">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    
+    <meta charset="utf-8" />
+
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, maximum-scale=5" />
+
+
+<meta name="theme-name" content="hugoplate" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="shortcut icon" href="/images/favicon_hu_c11345cc498a9505.png" type="image/x-icon">
+<link rel="icon" href="/images/favicon_hu_c11345cc498a9505.png" type="image/x-icon">
+<link rel="icon" type="image/png" sizes="48x48" href="/images/favicon_hu_9a29a06ba7bf90e.png">
+<link rel="icon" type="image/png" sizes="96x96" href="/images/favicon_hu_c11345cc498a9505.png">
+<link rel="apple-touch-icon" sizes="144x144" href="/images/favicon_hu_c6933bb9c9acc84f.png">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <base href="//localhost:1313/blog/cuda/streams/" />
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+  
+
+
+
+<title>Optimize CUDA Performance: Memory Latency Hiding with Streams</title>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <meta
+    name="keywords"
+    content="personal blog, HPC, Machine Learning, tech stuff, Computer Vision, AI, CUDA, Python, Deep Learning" />
+
+
+
+
+<meta name="description" content="Discover how to enhance CUDA application performance by hiding memory latency using streams. Learn practical techniques and best practices" />
+
+
+
+  <meta name="author" content="viswa.ravichandran" />
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+
+
+  
+  
+    
+    
+      
+    
+
+    
+
+
+    
+    
+
+
+    
+    
+      
+      
+      
+        <meta property="og:image" content="//localhost:1313/blog/cuda/streams/vec_add.png" />
+        <meta name="twitter:image" content="//localhost:1313/blog/cuda/streams/vec_add.png" />
+        <meta
+          name="twitter:card"
+          content="summary_large_image" />
+      
+      
+      <meta property="og:image:width" content="1912" />
+      <meta property="og:image:height" content="915" />
+    
+
+
+    
+    <meta
+      property="og:image:type"
+      content="image/.png" />
+  
+
+
+  
+
+
+
+
+
+<meta property="og:title" content="Optimize CUDA Performance: Memory Latency Hiding with Streams" />
+<meta property="og:description" content="Discover how to enhance CUDA application performance by hiding memory latency using streams. Learn practical techniques and best practices" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="//localhost:1313/blog/cuda/streams/" />
+
+
+<meta name="twitter:title" content="Optimize CUDA Performance: Memory Latency Hiding with Streams" />
+<meta name="twitter:description" content="Discover how to enhance CUDA application performance by hiding memory latency using streams. Learn practical techniques and best practices" />
+
+
+  <meta name="twitter:site" content="@https://x.com/viswa_ravi_" />
+
+
+  <meta name="twitter:creator" content="@viswa.ravichandran" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+  let indexURL = "//localhost:1313/searchindex.json";
+  let includeSectionsInSearch = ["blog"];
+  let search_no_results = "No results for";
+  let search_initial_message = "Type something to search..";
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+<meta http-equiv="x-dns-prefetch-control" content="on" />
+<link rel="preconnect" href="https://use.fontawesome.com" crossorigin />
+<link rel="preconnect" href="//cdnjs.cloudflare.com" />
+<link rel="preconnect" href="//www.googletagmanager.com" />
+<link rel="preconnect" href="//www.google-analytics.com" />
+<link rel="dns-prefetch" href="https://use.fontawesome.com" />
+<link rel="dns-prefetch" href="//ajax.googleapis.com" />
+<link rel="dns-prefetch" href="//cdnjs.cloudflare.com" />
+<link rel="dns-prefetch" href="//www.googletagmanager.com" />
+<link rel="dns-prefetch" href="//www.google-analytics.com" />
+<link rel="dns-prefetch" href="//fonts.googleapis.com" />
+<link rel="dns-prefetch" href="//connect.facebook.net" />
+<link rel="dns-prefetch" href="//platform.linkedin.com" />
+<link rel="dns-prefetch" href="//platform.twitter.com" />
+
+
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<script>
+  (function () {
+    const googleFont = document.createElement("link");
+    googleFont.href = "https://fonts.googleapis.com/css2?family=Heebo:wght@400;600&family=Signika:wght@500;700&display=swap";
+    googleFont.type = "text/css";
+    googleFont.rel = "stylesheet";
+    document.head.appendChild(googleFont);
+  })();
+</script>
+
+
+
+
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+<link
+  href="/css/style.css"
+  integrity=""
+  rel="stylesheet" />
+
+
+<link
+  defer
+  async
+  rel="stylesheet"
+  href="/css/style-lazy.css"
+  integrity=""
+  media="print"
+  onload="this.media='all'; this.onload=null;" />
+
+
+  </head>
+
+  <body>
+    
+    
+      
+
+
+
+
+
+      
+      <div
+  class="fixed left-0 top-0 z-50 flex w-[30px] items-center justify-center bg-gray-200 py-[2.5px] text-[12px] uppercase text-black sm:bg-red-200 md:bg-yellow-200 lg:bg-green-200 xl:bg-blue-200 2xl:bg-pink-200">
+  <span class="block sm:hidden">all</span>
+  <span class="hidden sm:block md:hidden">sm</span>
+  <span class="hidden md:block lg:hidden">md</span>
+  <span class="hidden lg:block xl:hidden">lg</span>
+  <span class="hidden xl:block 2xl:hidden">xl</span>
+  <span class="hidden 2xl:block">2xl</span>
+</div>
+
+    
+
+
+    
+    
+
+
+
+
+
+    
+    <header
+  class="header  z-30">
+  <nav class="navbar container">
+    
+    <div class="order-0">
+      
+      <a class="navbar-brand block" href="/">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+  
+  
+  
+
+
+  
+  
+    
+    
+  
+
+
+  
+  
+      
+      
+    
+    
+    
+    
+    
+    
+  
+  
+
+  
+  
+    
+    
+      
+      
+
+
+      
+      
+        
+        
+        
+        
+
+        
+        
+        
+      
+      
+    
+  
+  
+
+  
+    <img
+      fetchpriority="high"
+      decoding="async"
+      class="img img-light"
+      width="70"
+      height="32"
+      src="/images/logo_hu_17cd06bba4982a16.webp"
+      alt="Viswa Ravichandran Blog"
+      onerror="this.onerror=null;this.src='\/images\/logo_hu_84f2dc06b2966914.png';" />
+
+    <img
+      fetchpriority="high"
+      decoding="async"
+      class="img img-dark"
+      width="70"
+      height="32"
+      src="/images/logo-darkmode_hu_17cd06bba4982a16.webp"
+      alt="Viswa Ravichandran Blog"
+      onerror="this.onerror=null;this.src='\/images\/logo-darkmode_hu_84f2dc06b2966914.png';" />
+  
+  
+
+
+      </a>
+    </div>
+
+    
+    <input id="nav-toggle" type="checkbox" class="hidden" />
+    <label
+      for="nav-toggle"
+      class="order-3 cursor-pointer flex items-center lg:hidden text-dark dark:text-white lg:order-1">
+      <svg id="show-button" class="h-6 fill-current block" viewBox="0 0 20 20">
+        <title>Menu Open</title>
+        <path d="M0 3h20v2H0V3z m0 6h20v2H0V9z m0 6h20v2H0V0z"></path>
+      </svg>
+      <svg id="hide-button" class="h-6 fill-current hidden" viewBox="0 0 20 20">
+        <title>Menu Close</title>
+        <polygon
+          points="11 9 22 9 22 11 11 11 11 22 9 22 9 11 -2 11 -2 9 9 9 9 -2 11 -2"
+          transform="rotate(45 10 10)"></polygon>
+      </svg>
+    </label>
+    
+
+    
+    <ul
+      id="nav-menu"
+      class="navbar-nav order-3 hidden lg:flex w-full pb-6 lg:order-1 lg:w-auto lg:space-x-2 lg:pb-0 xl:space-x-8">
+      
+      
+        
+        
+        
+        
+          <li class="nav-item">
+            <a
+              class="nav-link text-lg "
+              
+              href="/"
+              >About</a
+            >
+          </li>
+        
+      
+        
+        
+        
+        
+          <li class="nav-item">
+            <a
+              class="nav-link text-lg "
+              
+              href="/blog"
+              >Blog</a
+            >
+          </li>
+        
+      
+
+
+      
+      
+    </ul>
+
+    
+    <div class="order-1 ml-auto flex items-center md:order-2 lg:ml-0">
+      
+        
+          <button
+            aria-label="search"
+            
+              class="border-border text-dark hover:text-primary
+              dark:border-darkmode-border mr-5 inline-block border-r
+              lg:border-r-0 pr-5 lg:pr-0 text-xl dark:text-white
+              dark:hover:text-darkmode-primary"
+            
+            data-target="search-modal">
+            <i class="fa-solid fa-search"></i>
+          </button>
+        
+      
+
+      
+
+
+      
+
+
+
+
+
+      
+      
+    </div>
+  </nav>
+</header>
+
+    
+
+
+
+
+  
+    <div
+      class="search-modal "
+      aria-hidden="true"
+      style="--color-primary: #121212">
+      <div data-target="close-search-modal" class="search-modal-overlay"></div>
+      <div
+        class="search-wrapper"
+        data-image="true"
+        data-description="true"
+        data-tags="true"
+        data-categories="true">
+        <div class="search-wrapper-header">
+          <label for="search-modal-input" style="margin-top:-1px">
+            <span class="sr-only">search icon</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 512 512"
+              height="18"
+              width="18"
+              class="search-icon"
+              data-type="search">
+              <path
+                fill="currentColor"
+                d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z" />
+            </svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 512 512"
+              height="18"
+              width="18"
+              class="search-reset"
+              data-type="reset">
+              <path
+                fill="currentColor"
+                d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c9.4-9.4 24.6-9.4 33.9 0l47 47 47-47c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-47 47 47 47c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-47-47-47 47c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l47-47-47-47c-9.4-9.4-9.4-24.6 0-33.9z" />
+            </svg>
+          </label>
+          <input
+            id="search-modal-input"
+            type="text"
+            data-search-input
+            autocomplete="off"
+            aria-label="Search"
+            placeholder="Search Post..." />
+        </div>
+        <div class="search-wrapper-body">
+          <div class="search-result" data-search-result></div>
+          <span class="search-result-empty">
+            Type something to search..
+          </span>
+        </div>
+        <div class="search-wrapper-footer">
+          <span>
+            <kbd>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                fill="currentColor"
+                viewBox="0 0 16 16">
+                <path
+                  d="M3.204 11h9.592L8 5.519 3.204 11zm-.753-.659 4.796-5.48a1 1 0 0 1 1.506 0l4.796 5.48c.566.647.106 1.659-.753 1.659H3.204a1 1 0 0 1-.753-1.659z" />
+              </svg>
+            </kbd>
+            <kbd>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                fill="currentColor"
+                style="margin-top:1px;"
+                viewBox="0 0 16 16">
+                <path
+                  d="M3.204 5h9.592L8 10.481 3.204 5zm-.753.659 4.796 5.48a1 1 0 0 0 1.506 0l4.796-5.48c.566-.647.106-1.659-.753-1.659H3.204a1 1 0 0 0-.753 1.659z" />
+              </svg>
+            </kbd>
+            to navigate
+          </span>
+          <span>
+            <kbd>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="12"
+                height="12"
+                fill="currentColor"
+                style="display:inline-block;"
+                viewBox="0 0 16 16">
+                <path
+                  fill-rule="evenodd"
+                  d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5z" />
+              </svg>
+            </kbd>
+            to select
+          </span>
+          <span class="search-result-info"></span>
+          <span data-target="close-search-modal">
+            <kbd>ESC</kbd> to close
+          </span>
+        </div>
+      </div>
+    </div>
+  
+
+
+
+
+    <main>
+      
+  <section class="section pt-7">
+    <div class="container">
+      <div class="row justify-center">
+        <article class="lg:col-10">
+          
+          
+          
+            <div class="mb-10">
+              
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+    
+      
+    
+
+
+    
+    
+
+
+    
+    
+      
+      
+    
+    
+    
+
+
+    
+    
+      
+      
+        
+
+        
+        
+        
+        
+        
+        
+        
+
+
+        
+        
+
+
+        <picture>
+          <source
+            
+              srcset="/blog/cuda/streams/vec_add_hu_f45528ca64f5a597.webp"
+            
+            media="(max-width: 575px)" />
+          <source
+            
+              srcset="/blog/cuda/streams/vec_add_hu_9abbef3dd8e4941.webp"
+            
+            media="(max-width: 767px)" />
+          <source
+            
+              srcset="/blog/cuda/streams/vec_add_hu_ef17b45787b461ff.webp"
+            
+            media="(max-width: 991px)" />
+          <source
+            
+              srcset="/blog/cuda/streams/vec_add_hu_f0ce7db719aad989.webp"
+             />
+          <img
+            
+              loading="lazy" decoding="async"
+              src="/blog/cuda/streams/vec_add_hu_90a9b2c98212ca27.png"
+            
+            
+            class=" w-full rounded img"
+            alt="Memory Latency Hiding in CUDA using Streams"
+            width="1912"
+            height="915" />
+        </picture>
+      
+      
+    
+    
+  
+
+
+  
+
+
+            </div>
+          
+
+
+          
+          <h1 class="h2 mb-4">
+            Memory Latency Hiding in CUDA using Streams
+          </h1>
+
+          
+          <ul class="mb-4">
+            
+            
+            
+              <li class="mr-4 inline-block">
+                <i class="fa-regular fa-folder mr-2"></i>
+                
+                  <a
+                    href="/categories/cuda-adventures/"
+                    class=""
+                    >Cuda adventures
+                  </a>
+                
+              </li>
+            
+            
+            <li class="mr-4 inline-block">
+              <i class="fa-regular fa-clock mr-2"></i>
+              April 4, 2022
+            </li>
+          </ul>
+
+          
+          <div class="content mb-10">
+            
+
+ 
+  
+
+<details open class="table-of-content blog">
+  <summary>
+    
+      Table of Contents
+    
+  </summary>
+  <nav id="TableOfContents">
+  <ol>
+    <li><a href="#code-setup">Code Setup</a>
+      <ol>
+        <li><a href="#error-handling">Error Handling</a></li>
+        <li><a href="#memory-handling">Memory Handling</a></li>
+        <li><a href="#profiling-cuda-kernels">Profiling CUDA Kernels</a>
+          <ol>
+            <li><a href="#nsight-compute">Nsight Compute</a></li>
+            <li><a href="#nsight-systems">Nsight Systems</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#vector-addition-kernel">Vector Addition Kernel</a>
+      <ol>
+        <li><a href="#single-stream-processing">Single-Stream Processing</a></li>
+        <li><a href="#memory-latency-hiding-with-concurrent-streams">Memory Latency Hiding with Concurrent Streams</a>
+          <ol>
+            <li><a href="#memory-latency">Memory Latency</a></li>
+            <li><a href="#allocating-memory-for-multiple-streams">Allocating Memory for Multiple Streams</a></li>
+            <li><a href="#processing-chunks-in-parallel">Processing Chunks in Parallel</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+</details>
+
+            <p>I’m starting a new CUDA project to deepen my understanding of GPU acceleration. I’ll begin with simple tasks like vector addition and move on to more involved projects, including image processing and language model optimizations. While this series won’t be a step-by-step tutorial, I’ll share the interesting parts of my implementations, highlighting the challenges I faced and the reasoning behind my decisions. For the complete code, feel free to check out the <a href="https://github.com/viswaravi/CUDA-Adventures"
+
+
+
+
+ target="_blank"
+ 
+
+
+>project repository</a>.</p>
+<p>In this first part, I&rsquo;ll be focusing in the implementation of a simple vector addition kernel, with a focus on optimizing memory latency. All my experiments will be conducted on an RTX 2060 GPU.</p>
+<h2 id="code-setup">Code Setup</h2>
+<h3 id="error-handling">Error Handling</h3>
+<p>In CUDA, most function calls return a status code of type <strong>cudaError_t</strong> to indicate success or failure. Checking the result of every single call can make your code unreadable. A common technique is to use a macro that wraps the function calls in error-checking logic. In my implementation, any error triggers a runtime exception, which can be caught and handled appropriately:</p>
+<div class="highlight"><pre tabindex="0" style="color:#abb2bf;background-color:#282c34;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-Cpp" data-lang="Cpp"><span style="display:flex;"><span><span style="color:#c678dd">inline</span> <span style="color:#e5c07b">void</span> <span style="color:#61afef;font-weight:bold">checkCuda</span>(<span style="color:#e06c75">cudaError_t</span> <span style="color:#e06c75">result</span>, <span style="color:#c678dd">const</span> <span style="color:#e5c07b">char</span><span style="color:#56b6c2">*</span> <span style="color:#e06c75">func</span>, <span style="color:#c678dd">const</span> <span style="color:#e5c07b">char</span><span style="color:#56b6c2">*</span> <span style="color:#e06c75">file</span>, <span style="color:#e5c07b">int</span> <span style="color:#e06c75">line</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#c678dd">if</span> (<span style="color:#e06c75">result</span> <span style="color:#56b6c2">!=</span> <span style="color:#e06c75">cudaSuccess</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#c678dd">throw</span> <span style="color:#e06c75">std</span><span style="color:#56b6c2">::</span><span style="color:#e06c75">runtime_error</span>(
+</span></span><span style="display:flex;"><span>            <span style="color:#e06c75">std</span><span style="color:#56b6c2">::</span><span style="color:#e06c75">string</span>(<span style="color:#98c379">&#34;CUDA error at &#34;</span>) <span style="color:#56b6c2">+</span> <span style="color:#e06c75">file</span> <span style="color:#56b6c2">+</span> <span style="color:#98c379">&#34;:&#34;</span> <span style="color:#56b6c2">+</span> <span style="color:#e06c75">std</span><span style="color:#56b6c2">::</span><span style="color:#e06c75">to_string</span>(<span style="color:#e06c75">line</span>) <span style="color:#56b6c2">+</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#98c379">&#34; (&#34;</span> <span style="color:#56b6c2">+</span> <span style="color:#e06c75">func</span> <span style="color:#56b6c2">+</span> <span style="color:#98c379">&#34;): &#34;</span> <span style="color:#56b6c2">+</span> <span style="color:#e06c75">cudaGetErrorString</span>(<span style="color:#e06c75">result</span>)
+</span></span><span style="display:flex;"><span>        );
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#7f848e">#define CUDA_CALL(func) checkCuda((func), #func, __FILE__, __LINE__)
+</span></span></span></code></pre></div><h3 id="memory-handling">Memory Handling</h3>
+<p>If a runtime error occurs, the application might exit before you can manually free any allocated memory. To avoid leaks, I use a RAII (Resource Acquisition Is Initialization) wrapper for device memory. It automatically releases GPU memory when it goes out of scope or if the application terminates unexpectedly:</p>
+<div class="highlight"><pre tabindex="0" style="color:#abb2bf;background-color:#282c34;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#c678dd">template</span> <span style="color:#56b6c2">&lt;</span><span style="color:#c678dd">typename</span> <span style="color:#e06c75">T</span><span style="color:#56b6c2">&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#c678dd">class</span> <span style="color:#e5c07b">CudaMemory</span> {
+</span></span><span style="display:flex;"><span><span style="color:#c678dd">public</span><span style="color:#56b6c2">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#c678dd">explicit</span> <span style="color:#e06c75">CudaMemory</span>(<span style="color:#e06c75">size_t</span> <span style="color:#e06c75">size</span>)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        <span style="color:#e06c75">ptr</span> <span style="color:#56b6c2">=</span> <span style="color:#c678dd">nullptr</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#e06c75">CUDA_CALL</span>(<span style="color:#e06c75">cudaMalloc</span>((<span style="color:#e5c07b">void</span><span style="color:#56b6c2">**</span>)<span style="color:#56b6c2">&amp;</span><span style="color:#e06c75">ptr</span>, <span style="color:#e06c75">size</span>));
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#7f848e">// Prevent copying
+</span></span></span><span style="display:flex;"><span>    <span style="color:#e06c75">CudaMemory</span>(<span style="color:#c678dd">const</span> <span style="color:#e06c75">CudaMemory</span><span style="color:#56b6c2">&amp;</span>) <span style="color:#56b6c2">=</span> <span style="color:#c678dd">delete</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#e06c75">CudaMemory</span><span style="color:#56b6c2">&amp;</span> <span style="color:#c678dd">operator</span><span style="color:#56b6c2">=</span>(<span style="color:#c678dd">const</span> <span style="color:#e06c75">CudaMemory</span><span style="color:#56b6c2">&amp;</span>) <span style="color:#56b6c2">=</span> <span style="color:#c678dd">delete</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#7f848e">// Allow Moving
+</span></span></span><span style="display:flex;"><span>    <span style="color:#e06c75">CudaMemory</span>(<span style="color:#e06c75">CudaMemory</span><span style="color:#56b6c2">&amp;&amp;</span> <span style="color:#e06c75">other</span>) <span style="color:#c678dd">noexcept</span> <span style="color:#56b6c2">:</span> <span style="color:#e06c75">ptr</span>(<span style="color:#e06c75">other</span>.<span style="color:#e06c75">ptr</span>) { <span style="color:#e06c75">other</span>.<span style="color:#e06c75">ptr</span> <span style="color:#56b6c2">=</span> <span style="color:#c678dd">nullptr</span>; }
+</span></span><span style="display:flex;"><span>    <span style="color:#e06c75">CudaMemory</span><span style="color:#56b6c2">&amp;</span> <span style="color:#c678dd">operator</span><span style="color:#56b6c2">=</span>(<span style="color:#e06c75">CudaMemory</span><span style="color:#56b6c2">&amp;&amp;</span> <span style="color:#e06c75">other</span>) <span style="color:#c678dd">noexcept</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#c678dd">if</span> (<span style="color:#c678dd">this</span> <span style="color:#56b6c2">!=</span> <span style="color:#56b6c2">&amp;</span><span style="color:#e06c75">other</span>) {
+</span></span><span style="display:flex;"><span>            <span style="color:#c678dd">if</span> (<span style="color:#e06c75">ptr</span>) <span style="color:#e06c75">cudaFree</span>(<span style="color:#e06c75">ptr</span>);
+</span></span><span style="display:flex;"><span>            <span style="color:#e06c75">ptr</span> <span style="color:#56b6c2">=</span> <span style="color:#e06c75">other</span>.<span style="color:#e06c75">ptr</span>;
+</span></span><span style="display:flex;"><span>            <span style="color:#e06c75">other</span>.<span style="color:#e06c75">ptr</span> <span style="color:#56b6c2">=</span> <span style="color:#c678dd">nullptr</span>;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>        <span style="color:#c678dd">return</span> <span style="color:#56b6c2">*</span><span style="color:#c678dd">this</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#56b6c2">~</span><span style="color:#e06c75">CudaMemory</span>() {  <span style="color:#c678dd">if</span> (<span style="color:#e06c75">ptr</span>) <span style="color:#e06c75">cudaFree</span>(<span style="color:#e06c75">ptr</span>); }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#e06c75">T</span><span style="color:#56b6c2">*</span> <span style="color:#61afef;font-weight:bold">get</span>() <span style="color:#c678dd">const</span> { <span style="color:#c678dd">return</span> <span style="color:#e06c75">ptr</span>; }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#c678dd">private</span><span style="color:#56b6c2">:</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#e06c75">T</span><span style="color:#56b6c2">*</span> <span style="color:#e06c75">ptr</span>;
+</span></span><span style="display:flex;"><span>};
+</span></span></code></pre></div><h3 id="profiling-cuda-kernels">Profiling CUDA Kernels</h3>
+<h4 id="nsight-compute">Nsight Compute</h4>
+<p>This tool focuses on kernel-level performance metrics, like memory bandwidth, occupancy, and warp efficiency. You can analyze individual kernels in detail, identify bottlenecks (e.g., memory-bound vs. compute-bound). Nsight Compute replays kernel executions in multiple passes, collecting different sets of data each time. This approach aims to minimize performance overhead during any single run. It supports several profiling modes:</p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: center">Profiling Mode</th>
+          <th style="text-align: center">How it works</th>
+          <th style="text-align: center">When to use</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: center">Kernel Replay</td>
+          <td style="text-align: center">Replays only the kernel execution. Saves GPU memory state before each kernel run and restores it before each subsequent replay pass.</td>
+          <td style="text-align: center">Great for fast profiling when memory usage isn’t a concern. It can, however, double your memory usage.</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">Application Replay</td>
+          <td style="text-align: center">Instead of saving and restoring memory states, relaunches the entire application for each pass</td>
+          <td style="text-align: center">This approach requires that the application can produce consistent results across multiple runs and that relaunching the application is feasible in terms of time and resources.</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="nsight-systems">Nsight Systems</h4>
+<p>If you need a broader view that includes CPU-GPU concurrency, multi-threaded host code, and system-level timing, Nsight Systems is often more appropriate. It shows how different streams and tasks overlap, where synchronization points occur, and how host threads and device activity line up in a timeline. In other words, Nsight Systems is more about your application&rsquo;s “big picture,” while Nsight Compute is a deep-dive into a specific kernel’s performance characteristics.</p>
+<blockquote>
+<p><strong>Profiling Mode</strong> - Always profile the kernels in Release mode if you are using Visual Studio instead of Debug mode for accurate performance.</p>
+</blockquote>
+<h2 id="vector-addition-kernel">Vector Addition Kernel</h2>
+<p>The actual vector addition kernel is straightforward. It reads from two input vectors and writes the sum into a third vector. The only extra detail is a boundary check. This is a compute light and memory bound task.</p>
+<div class="highlight"><pre tabindex="0" style="color:#abb2bf;background-color:#282c34;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#e06c75">__global__</span> <span style="color:#e5c07b">void</span> <span style="color:#61afef;font-weight:bold">addKernel</span>(<span style="color:#e5c07b">int</span><span style="color:#56b6c2">*</span> <span style="color:#e06c75">c</span>, <span style="color:#c678dd">const</span> <span style="color:#e5c07b">int</span><span style="color:#56b6c2">*</span> <span style="color:#e06c75">a</span>, <span style="color:#c678dd">const</span> <span style="color:#e5c07b">int</span><span style="color:#56b6c2">*</span> <span style="color:#e06c75">b</span>, <span style="color:#c678dd">const</span> <span style="color:#e5c07b">unsigned</span> <span style="color:#e5c07b">long</span> <span style="color:#e5c07b">long</span> <span style="color:#e06c75">length</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#e5c07b">unsigned</span> <span style="color:#e5c07b">long</span> <span style="color:#e5c07b">long</span> <span style="color:#e06c75">idx</span> <span style="color:#56b6c2">=</span> (<span style="color:#e06c75">blockIdx</span>.<span style="color:#e06c75">x</span> <span style="color:#56b6c2">*</span> <span style="color:#e06c75">blockDim</span>.<span style="color:#e06c75">x</span>) <span style="color:#56b6c2">+</span> <span style="color:#e06c75">threadIdx</span>.<span style="color:#e06c75">x</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#c678dd">if</span> (<span style="color:#e06c75">idx</span> <span style="color:#56b6c2">&lt;</span> <span style="color:#e06c75">length</span>)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        <span style="color:#e06c75">c</span>[<span style="color:#e06c75">idx</span>] <span style="color:#56b6c2">=</span> <span style="color:#e06c75">a</span>[<span style="color:#e06c75">idx</span>] <span style="color:#56b6c2">+</span> <span style="color:#e06c75">b</span>[<span style="color:#e06c75">idx</span>];
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="single-stream-processing">Single-Stream Processing</h3>
+<p>When your data fully fits in device memory <strong>(Memory for A + Memory for B + Memory for C)</strong>, you can load it into the GPU, run one kernel, and then copy results back. By default, CUDA uses a single stream, so <strong>Host-to-Device (H2D) transfer → Kernel execution → Device-to-Host (D2H)</strong> transfer all happen sequentially.</p>
+<p>However, if you have large data sets that don’t fit into device memory at once, you’ll need to split the data into smaller chunks. Each chunk is transferred, processed, and transferred back in a loop. The memory allocation for chunked vector addition is shown below.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  
+  
+
+
+  
+  
+    
+    
+      
+    
+
+    
+
+
+    
+    
+
+
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    
+
+
+    
+    
+      
+      
+
+      
+        
+        
+      
+
+
+      
+
+      
+      
+        
+        
+        
+      
+      
+      
+      
+
+    
+    
+
+    
+    
+      <figure
+        class="img-center"
+        role="group"
+        aria-describedby="caption-Memory allocation for single stream execution in chunks">
+      
+          <img
+            title="image title"
+            loading="lazy"
+            decoding="async"
+            class="img img-fluid"
+            width="2369"
+            height="583"
+            src="/blog/cuda/streams/vec_add_chunk_hu_2d50a16f503c15f1.png"
+            alt="alter-text"
+            onerror="this.onerror='null';this.src='\/blog\/cuda\/streams\/vec_add_chunk_hu_2d50a16f503c15f1.png'" />
+      
+        <figcaption id="caption-Memory allocation for single stream execution in chunks" class="caption-Memory-allocation-for-single-stream-execution-in-chunks">
+          Memory allocation for single stream execution in chunks
+        </figcaption>
+      </figure>
+    
+
+  
+  
+
+
+
+
+
+
+</p>
+<p>By profiling the application through Nsight Compute, we can obtain the GPU utilization chart, which shows the speed of light (SOL) throughput for both memory and compute operations, as illustrated below. From the chart, we can infer that the vector addition kernel is <strong>memory bandwidth bound</strong> with high memory utilization (85%) compared to the compute utilization (20%).</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  
+  
+
+
+  
+  
+    
+    
+      
+    
+
+    
+
+
+    
+    
+
+
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    
+
+
+    
+    
+      
+      
+
+      
+        
+        
+      
+
+
+      
+
+      
+      
+        
+        
+        
+      
+      
+      
+      
+
+    
+    
+
+    
+    
+      <figure
+        class="img-center"
+        role="group"
+        aria-describedby="caption-GPU Throughput Chart">
+      
+          <img
+            title="image title"
+            loading="lazy"
+            decoding="async"
+            class="img img-fluid"
+            width="1867"
+            height="207"
+            src="/blog/cuda/streams/gpu_throughput_hu_a387ddcb945ba784.png"
+            alt="alter-text"
+            onerror="this.onerror='null';this.src='\/blog\/cuda\/streams\/gpu_throughput_hu_a387ddcb945ba784.png'" />
+      
+        <figcaption id="caption-GPU Throughput Chart" class="caption-GPU-Throughput-Chart">
+          GPU Throughput Chart
+        </figcaption>
+      </figure>
+    
+
+  
+  
+
+
+
+
+
+
+
+<p>Nsight Systems Trace of the application will reveal further insights. The kernel computation and memory transfer timeline can be viewed from the trace of the program execution as shown below, where multiple <strong>Load → Execute → Store</strong> operations are sequentially executed.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  
+  
+
+
+  
+  
+    
+    
+      
+    
+
+    
+
+
+    
+    
+
+
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    
+
+
+    
+    
+      
+      
+
+      
+        
+        
+      
+
+
+      
+
+      
+      
+        
+        
+        
+      
+      
+      
+      
+
+    
+    
+
+    
+    
+      <figure
+        class="img-center"
+        role="group"
+        aria-describedby="caption-Single stream execution using Pageable memory">
+      
+          <img
+            title="image title"
+            loading="lazy"
+            decoding="async"
+            class="img img-fluid"
+            width="1081"
+            height="190"
+            src="/blog/cuda/streams/chunked_hu_768d402a3eecef3a.png"
+            alt="alter-text"
+            onerror="this.onerror='null';this.src='\/blog\/cuda\/streams\/chunked_hu_768d402a3eecef3a.png'" />
+      
+        <figcaption id="caption-Single stream execution using Pageable memory" class="caption-Single-stream-execution-using-Pageable-memory">
+          Single stream execution using Pageable memory
+        </figcaption>
+      </figure>
+    
+
+  
+  
+
+
+
+
+
+
+
+<!-- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  
+  
+
+
+  
+  
+    
+    
+      
+    
+
+    
+
+
+    
+    
+
+
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    
+
+
+    
+    
+      
+      
+
+      
+        
+        
+      
+
+
+      
+
+      
+      
+        
+        
+        
+      
+      
+      
+      
+
+    
+    
+
+    
+    
+      <figure
+        class="img-center"
+        role="group"
+        aria-describedby="caption-Kernel Occupancy">
+      
+          <img
+            title="image title"
+            loading="lazy"
+            decoding="async"
+            class="img img-fluid"
+            width="936"
+            height="121"
+            src="/blog/cuda/streams/occupancy_hu_533caa7e8d00a2a1.png"
+            alt="alter-text"
+            onerror="this.onerror='null';this.src='\/blog\/cuda\/streams\/occupancy_hu_533caa7e8d00a2a1.png'" />
+      
+        <figcaption id="caption-Kernel Occupancy" class="caption-Kernel-Occupancy">
+          Kernel Occupancy
+        </figcaption>
+      </figure>
+    
+
+  
+  
+
+
+
+
+
+
+ -->
+<p>Because this approach runs each step in sequence, we can see that the GPU is sitting idle, waiting for memory transfers before executing kernel for each chunk of information. Thus, we need to “hide” these memory latencies by overlapping transfers with computation. Because each thread is doing just one or a few arithmetic operations per memory transaction, the key to improving performance is keeping the memory subsystem as busy as possible.</p>
+<!-- >The benefit is not in faster transfers, but in reducing idle time by better overlapping compute and memory operations. -->
+<h3 id="memory-latency-hiding-with-concurrent-streams">Memory Latency Hiding with Concurrent Streams</h3>
+<h4 id="memory-latency">Memory Latency</h4>
+<p>Memory latency is the delay between the moment a processor (in this case, a GPU core or “thread”) requests data from memory and the moment that data actually arrives. Even though modern GPUs have incredibly high bandwidth—meaning they can move a lot of data per second—they still face latency because it takes time for each request to travel from the GPU’s on-chip cores out to the external memory chips (like GDDR6) and back. In our case, we need to transfer vector data from host memory (RAM/Disk File) to the device memory and then access it and transferring huge chunk of data per kernel executing is stalling the compute units.</p>
+<blockquote>
+<p><strong>Memory Latency</strong>: The number of cycles needed to perform memory loads/stores.</p>
+</blockquote>
+<p>One effective way to hide memory latency is to use multiple streams. With concurrent streams, you can start transferring data for the next chunk while the current chunk is still being processed. This lets the GPU overlap Host-to-Device (H2D) transfers, kernel execution, and Device-to-Host (D2H) transfers.</p>
+<h4 id="allocating-memory-for-multiple-streams">Allocating Memory for Multiple Streams</h4>
+<p>First, we need to allocate separate device memory locations for each stream. This can be done by querying the total available free memory on the device and then splitting it across each stream as follows:</p>
+<div class="highlight"><pre tabindex="0" style="color:#abb2bf;background-color:#282c34;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#e06c75">size_t</span> <span style="color:#e06c75">free_mem</span>;
+</span></span><span style="display:flex;"><span><span style="color:#e06c75">CUDA_CALL</span>(<span style="color:#e06c75">cudaMemGetInfo</span>(<span style="color:#56b6c2">&amp;</span><span style="color:#e06c75">free_mem</span>, <span style="color:#c678dd">nullptr</span>)); <span style="color:#7f848e">// query free memory
+</span></span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#7f848e">// compute maximum vector length that can fit into device memory per chunk
+</span></span></span><span style="display:flex;"><span><span style="color:#e06c75">size_t</span> <span style="color:#e06c75">total_max_mem</span> <span style="color:#56b6c2">=</span> <span style="color:#e06c75">free_mem</span> <span style="color:#56b6c2">*</span> <span style="color:#e06c75">free_mem_threshold</span>; <span style="color:#7f848e">// Limit memory usage in GPU
+</span></span></span><span style="display:flex;"><span><span style="color:#e5c07b">int</span> <span style="color:#e06c75">num_vecs_in_device</span> <span style="color:#56b6c2">=</span> <span style="color:#d19a66">3</span> <span style="color:#56b6c2">*</span> <span style="color:#e06c75">num_streams</span>; <span style="color:#7f848e">// A,B,C for each N Streams
+</span></span></span><span style="display:flex;"><span><span style="color:#e06c75">size_t</span> <span style="color:#e06c75">vec_max_mem</span> <span style="color:#56b6c2">=</span> <span style="color:#e06c75">total_max_mem</span> <span style="color:#56b6c2">/</span> <span style="color:#e06c75">num_vecs_in_device</span>;
+</span></span><span style="display:flex;"><span><span style="color:#e06c75">size_t</span> <span style="color:#e06c75">vec_max_len</span> <span style="color:#56b6c2">=</span> <span style="color:#e06c75">vec_max_mem</span> <span style="color:#56b6c2">/</span> <span style="color:#c678dd">sizeof</span>(<span style="color:#e5c07b">int</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#7f848e">// compute chunk config
+</span></span></span><span style="display:flex;"><span><span style="color:#e5c07b">unsigned</span> <span style="color:#e5c07b">long</span> <span style="color:#e5c07b">long</span> <span style="color:#e06c75">chunk_len</span> <span style="color:#56b6c2">=</span> <span style="color:#e06c75">vec_max_len</span> <span style="color:#56b6c2">-</span> (<span style="color:#e06c75">vec_max_len</span> <span style="color:#56b6c2">%</span> <span style="color:#e06c75">MAX_BLOCK_DIM</span>); <span style="color:#7f848e">// Making sure chunks can be divided into max block dim
+</span></span></span><span style="display:flex;"><span><span style="color:#e06c75">size_t</span> <span style="color:#e06c75">chunk_num</span> <span style="color:#56b6c2">=</span> <span style="color:#e06c75">array_len</span> <span style="color:#56b6c2">/</span> <span style="color:#e06c75">chunk_len</span>; <span style="color:#7f848e">// Total number of chunks to be processed
+</span></span></span><span style="display:flex;"><span><span style="color:#e5c07b">int</span> <span style="color:#e06c75">chunk_mem_size</span> <span style="color:#56b6c2">=</span> <span style="color:#e06c75">chunk_len</span> <span style="color:#56b6c2">*</span> <span style="color:#c678dd">sizeof</span>(<span style="color:#e5c07b">int</span>);
+</span></span></code></pre></div><p>For executing vector addition with 2 streams, the device memory is allocated as shown in the image below. It&rsquo;s important to note that dividing the available device memory among streams means each stream processes less data at once compared to a single stream execution.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  
+  
+
+
+  
+  
+    
+    
+      
+    
+
+    
+
+
+    
+    
+
+
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    
+
+
+    
+    
+      
+      
+
+      
+        
+        
+      
+
+
+      
+
+      
+      
+        
+        
+        
+      
+      
+      
+      
+
+    
+    
+
+    
+    
+      <figure
+        class="img-center"
+        role="group"
+        aria-describedby="caption-Multi stream execution using Pinned Memory">
+      
+          <img
+            title="image title"
+            loading="lazy"
+            decoding="async"
+            class="img img-fluid"
+            width="2369"
+            height="583"
+            src="/blog/cuda/streams/vec_add_stream_hu_18bd2f9efa4b5928.png"
+            alt="alter-text"
+            onerror="this.onerror='null';this.src='\/blog\/cuda\/streams\/vec_add_stream_hu_18bd2f9efa4b5928.png'" />
+      
+        <figcaption id="caption-Multi stream execution using Pinned Memory" class="caption-Multi-stream-execution-using-Pinned-Memory">
+          Multi stream execution using Pinned Memory
+        </figcaption>
+      </figure>
+    
+
+  
+  
+
+
+
+
+
+
+
+<h4 id="processing-chunks-in-parallel">Processing Chunks in Parallel</h4>
+<p>Once you’ve set up the device allocations for each stream, you can distribute chunks to them in a nested loop. For every batch of chunks (limited by the number of streams), you transfer data to the device, run the kernel, and transfer the results back asynchronously:</p>
+<div class="highlight"><pre tabindex="0" style="color:#abb2bf;background-color:#282c34;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#7f848e">// Process Vector in Stream Chunks
+</span></span></span><span style="display:flex;"><span><span style="color:#c678dd">for</span> (<span style="color:#e5c07b">int</span> <span style="color:#e06c75">chunk_index</span> <span style="color:#56b6c2">=</span> <span style="color:#d19a66">0</span>; <span style="color:#e06c75">chunk_index</span> <span style="color:#56b6c2">&lt;</span> <span style="color:#e06c75">chunk_num</span>; <span style="color:#e06c75">chunk_index</span> <span style="color:#56b6c2">=</span> <span style="color:#e06c75">chunk_index</span> <span style="color:#56b6c2">+</span> <span style="color:#e06c75">num_streams</span>)
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#c678dd">for</span> (<span style="color:#e5c07b">int</span> <span style="color:#e06c75">stream_index</span> <span style="color:#56b6c2">=</span> <span style="color:#d19a66">0</span>; <span style="color:#e06c75">stream_index</span> <span style="color:#56b6c2">&lt;</span> <span style="color:#e06c75">num_streams</span>; <span style="color:#e06c75">stream_index</span><span style="color:#56b6c2">++</span>)
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        <span style="color:#e5c07b">int</span> <span style="color:#e06c75">chunk_offset</span> <span style="color:#56b6c2">=</span> (<span style="color:#e06c75">chunk_index</span><span style="color:#56b6c2">+</span><span style="color:#e06c75">stream_index</span>) <span style="color:#56b6c2">*</span> <span style="color:#e06c75">chunk_len</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#7f848e">// Transfer Data to GPU Stream
+</span></span></span><span style="display:flex;"><span>        <span style="color:#e06c75">CUDA_CALL</span>(<span style="color:#e06c75">cudaMemcpyAsync</span>(<span style="color:#e06c75">dev_a</span>[<span style="color:#e06c75">stream_index</span>].<span style="color:#e06c75">get</span>(), <span style="color:#e06c75">h_A</span> <span style="color:#56b6c2">+</span> <span style="color:#e06c75">chunk_offset</span>, <span style="color:#e06c75">chunk_mem_size</span>, <span style="color:#e06c75">cudaMemcpyHostToDevice</span>, <span style="color:#e06c75">streams</span>[<span style="color:#e06c75">stream_index</span>]));
+</span></span><span style="display:flex;"><span>        <span style="color:#e06c75">CUDA_CALL</span>(<span style="color:#e06c75">cudaMemcpyAsync</span>(<span style="color:#e06c75">dev_b</span>[<span style="color:#e06c75">stream_index</span>].<span style="color:#e06c75">get</span>(), <span style="color:#e06c75">h_B</span> <span style="color:#56b6c2">+</span> <span style="color:#e06c75">chunk_offset</span>, <span style="color:#e06c75">chunk_mem_size</span>, <span style="color:#e06c75">cudaMemcpyHostToDevice</span>, <span style="color:#e06c75">streams</span>[<span style="color:#e06c75">stream_index</span>]));
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#7f848e">// Kernel
+</span></span></span><span style="display:flex;"><span>        <span style="color:#e06c75">addKernel</span><span style="color:#56b6c2">&lt;&lt;&lt;</span><span style="color:#e06c75">gridDim</span>, <span style="color:#e06c75">blockDim</span>, <span style="color:#d19a66">0</span>, <span style="color:#e06c75">streams</span>[<span style="color:#e06c75">stream_index</span>]<span style="color:#56b6c2">&gt;&gt;&gt;</span>(<span style="color:#e06c75">dev_c</span>[<span style="color:#e06c75">stream_index</span>].<span style="color:#e06c75">get</span>(), <span style="color:#e06c75">dev_a</span>[<span style="color:#e06c75">stream_index</span>].<span style="color:#e06c75">get</span>(), <span style="color:#e06c75">dev_b</span>[<span style="color:#e06c75">stream_index</span>].<span style="color:#e06c75">get</span>(), <span style="color:#e06c75">chunk_len</span>);
+</span></span><span style="display:flex;"><span>        <span style="color:#7f848e">// Check for any errors launching the kernel
+</span></span></span><span style="display:flex;"><span>        <span style="color:#e06c75">CUDA_CALL</span>(<span style="color:#e06c75">cudaGetLastError</span>());
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#7f848e">// Transfer back to Host
+</span></span></span><span style="display:flex;"><span>        <span style="color:#e06c75">CUDA_CALL</span>(<span style="color:#e06c75">cudaMemcpyAsync</span>(<span style="color:#e06c75">h_C</span> <span style="color:#56b6c2">+</span> <span style="color:#e06c75">chunk_offset</span>, <span style="color:#e06c75">dev_c</span>[<span style="color:#e06c75">stream_index</span>].<span style="color:#e06c75">get</span>(), <span style="color:#e06c75">chunk_mem_size</span>, <span style="color:#e06c75">cudaMemcpyDeviceToHost</span>, <span style="color:#e06c75">streams</span>[<span style="color:#e06c75">stream_index</span>]));
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>The following image shows Nsight system trace of multi stream execution, which shows that the second chunks H2D transfer starts even when the first chunk is still executing the kernel. Thus, while one stream is waiting on memory transfers, other streams can keep CUDA cores active.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  
+  
+
+
+  
+  
+    
+    
+      
+    
+
+    
+
+
+    
+    
+
+
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    
+
+
+    
+    
+      
+      
+
+      
+        
+        
+      
+
+
+      
+
+      
+      
+        
+        
+        
+      
+      
+      
+      
+
+    
+    
+
+    
+    
+      <figure
+        class="img-center"
+        role="group"
+        aria-describedby="caption-Memory allocation for Multi stream execution in chunks">
+      
+          <img
+            title="image title"
+            loading="lazy"
+            decoding="async"
+            class="img img-fluid"
+            width="993"
+            height="103"
+            src="/blog/cuda/streams/multistream_hu_bcbd498f02d98857.png"
+            alt="alter-text"
+            onerror="this.onerror='null';this.src='\/blog\/cuda\/streams\/multistream_hu_bcbd498f02d98857.png'" />
+      
+        <figcaption id="caption-Memory allocation for Multi stream execution in chunks" class="caption-Memory-allocation-for-Multi-stream-execution-in-chunks">
+          Memory allocation for Multi stream execution in chunks
+        </figcaption>
+      </figure>
+    
+
+  
+  
+
+
+
+
+
+
+
+<blockquote>
+<p><strong>Memory transfer overlapping</strong> - Modern NVIDIA GPUs have separate Direct Memory Access (DMA) engines for handling H2D and D2H transfers. Since these engines operate independently, H2D and D2H can run concurrently. But if you launch two H2D transfers or two D2H transfers, they must compete for the same DMA engine, causing serialization.</p>
+</blockquote>
+<p>Below is a performance comparison chart for large vectors (536870912 integers, or 2GB of memory). Note how multiple streams significantly reduce total execution time:</p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: center">Host Memory</th>
+          <th style="text-align: center">Streams</th>
+          <th style="text-align: center">GPU Duration</th>
+          <th style="text-align: center">Memory Throughput(Gbyte/s)</th>
+          <th style="text-align: center">Mem Busy(%)</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: center">Pageable Memory</td>
+          <td style="text-align: center">1</td>
+          <td style="text-align: center">3.86 ms</td>
+          <td style="text-align: center">277.19</td>
+          <td style="text-align: center">39.66</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">Pinned Memory</td>
+          <td style="text-align: center">1</td>
+          <td style="text-align: center">3.87 ms</td>
+          <td style="text-align: center">278.40</td>
+          <td style="text-align: center">39.76</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">Pinned Memory</td>
+          <td style="text-align: center">2</td>
+          <td style="text-align: center">1.94 ms</td>
+          <td style="text-align: center">277.04</td>
+          <td style="text-align: center">39.29</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">Pinned Memory</td>
+          <td style="text-align: center">3</td>
+          <td style="text-align: center">1.29 ms</td>
+          <td style="text-align: center">277.87</td>
+          <td style="text-align: center">39.58</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">Pinned Memory</td>
+          <td style="text-align: center">4</td>
+          <td style="text-align: center">972.19 µs</td>
+          <td style="text-align: center">275.42</td>
+          <td style="text-align: center">39.50</td>
+      </tr>
+  </tbody>
+</table>
+<p>By creating multiple streams, you effectively keep the GPU’s SMs (Streaming Multiprocessors) busier, reduce idle cycles, and boost overall efficiency. Increasing streams from 1 (3.87 ms) to 4 (0.972 µs) cuts the execution time dramatically—by about 75%.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  
+  
+
+
+  
+  
+    
+    
+      
+    
+
+    
+
+
+    
+    
+
+
+    
+    
+    
+    
+      
+      
+    
+    
+    
+    
+
+
+    
+    
+      
+      
+
+      
+        
+        
+      
+
+
+      
+
+      
+      
+        
+        
+        
+      
+      
+      
+      
+
+    
+    
+
+    
+    
+      <figure
+        class="img-center"
+        role="group"
+        aria-describedby="caption-Execution Time vs. Number of Streams in CUDA">
+      
+          <img
+            title="image title"
+            loading="lazy"
+            decoding="async"
+            class="img img-fluid"
+            width="691"
+            height="470"
+            src="/blog/cuda/streams/exec_time_plot_hu_dbcb4af3059caf7a.png"
+            alt="alter-text"
+            onerror="this.onerror='null';this.src='\/blog\/cuda\/streams\/exec_time_plot_hu_dbcb4af3059caf7a.png'" />
+      
+        <figcaption id="caption-Execution Time vs. Number of Streams in CUDA" class="caption-Execution-Time-vs-Number-of-Streams-in-CUDA">
+          Execution Time vs. Number of Streams in CUDA
+        </figcaption>
+      </figure>
+    
+
+  
+  
+
+
+
+
+
+
+
+<p><strong>Multiple Streams Overlap Transfers and Computations:</strong> When you add multiple streams (2, 3, or 4), you see a substantial drop in execution time (down to ~972 µs with four streams), but the throughput and Mem busy percentage remain in a similar range. The main gain here isn’t in speeding up the memory transfers themselves—it’s in hiding memory latency so that the GPU is doing useful work instead of waiting.</p>
+<hr>
+<p>That wraps up the first part of this series. Stay tuned for more insights as I explore GPU acceleration and tackle increasingly complex tasks!</p>
+
+          </div>
+          <div class="row items-start justify-between">
+            
+            
+              <div class="lg:col-5 mb-10 flex items-center lg:mb-0">
+                <h5 class="mr-3">Tags :</h5>
+                <ul>
+                  
+                    <li class="inline-block">
+                      <a
+                        class="bg-theme-light hover:bg-primary dark:bg-darkmode-theme-light dark:hover:bg-darkmode-primary dark:hover:text-dark m-1 block rounded px-3 py-1 hover:text-white"
+                        href="/tags/cpp/">
+                        Cpp
+                      </a>
+                    </li>
+                  
+                    <li class="inline-block">
+                      <a
+                        class="bg-theme-light hover:bg-primary dark:bg-darkmode-theme-light dark:hover:bg-darkmode-primary dark:hover:text-dark m-1 block rounded px-3 py-1 hover:text-white"
+                        href="/tags/cuda/">
+                        Cuda
+                      </a>
+                    </li>
+                  
+                </ul>
+              </div>
+            
+            <div class="lg:col-4 flex items-center">
+              
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="share-icons">
+  
+  
+    <a
+      class="share-link share-facebook"
+      href="https://facebook.com/sharer/sharer.php?u=%2f%2flocalhost%3a1313%2fblog%2fcuda%2fstreams%2f"
+      target="_blank"
+      rel="noopener"
+      aria-label="share facebook">
+      <span class="share-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path
+            d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z" />
+        </svg>
+      </span>
+    </a>
+  
+
+
+  
+  
+    <a
+      class="share-link share-x"
+      href="https://x.com/intent/tweet/?text=Share&amp;url=%2f%2flocalhost%3a1313%2fblog%2fcuda%2fstreams%2f"
+      target="_blank"
+      rel="noopener"
+      aria-label="share x">
+      <span aria-hidden="true" class="share-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path
+            d="M8 2H1l8.26 11.015L1.45 22H4.1l6.388-7.349L16 22h7l-8.608-11.478L21.8 2h-2.65l-5.986 6.886zm9 18L5 4h2l12 16z" />
+        </svg>
+      </span>
+    </a>
+  
+
+
+  
+  
+    <a
+      class="share-link share-email"
+      href="mailto:?subject=Share&amp;body=%2f%2flocalhost%3a1313%2fblog%2fcuda%2fstreams%2f"
+      target="_self"
+      rel="noopener"
+      aria-label="share email">
+      <span aria-hidden="true" class="share-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path
+            d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z" />
+        </svg>
+      </span>
+    </a>
+  
+
+
+  
+  
+    <a
+      class="share-link share-reddit"
+      href="https://reddit.com/submit/?url=%2f%2flocalhost%3a1313%2fblog%2fcuda%2fstreams%2f&amp;resubmit=true&amp;title=Share"
+      target="_blank"
+      rel="noopener"
+      aria-label="share reddit">
+      <span aria-hidden="true" class="share-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path
+            d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.97-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z" />
+        </svg>
+      </span>
+    </a>
+  
+
+
+  
+  
+
+
+  
+  
+
+
+  
+  
+
+
+  
+  
+
+
+  
+  
+
+
+  
+  
+
+
+  
+  
+    <span class="fediverse-share">
+      <a
+        class="share-link share-fediverse"
+        href="javascript:void(0);"
+        onclick="toggleFediverseInput(this)"
+        aria-label="share fediverse">
+        <span aria-hidden="true" class="share-icon">
+          <svg
+            viewBox="-10 -5 1034 1034"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            version="1.1">
+            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+            <g
+              id="SVGRepo_tracerCarrier"
+              stroke-linecap="round"
+              stroke-linejoin="round"></g>
+            <g id="SVGRepo_iconCarrier">
+              <path
+                d="M539 176q-32 0 -55 22t-25 55t20.5 58t56 27t58.5 -20.5t27 -56t-20.5 -59t-56.5 -26.5h-5zM452 271l-232 118q20 20 25 48l231 -118q-19 -20 -24 -48zM619 298q-13 25 -38 38l183 184q13 -25 39 -38zM477 320l-135 265l40 40l143 -280q-28 -5 -48 -25zM581 336 q-22 11 -46 10l-8 -1l21 132l56 9zM155 370q-32 0 -55 22.5t-25 55t20.5 58t56.5 27t59 -21t26.5 -56t-21 -58.5t-55.5 -27h-6zM245 438q1 9 1 18q-1 19 -10 35l132 21l26 -50zM470 474l-26 51l311 49q-1 -8 -1 -17q1 -19 10 -36zM842 480q-32 1 -55 23t-24.5 55t21 58 t56 27t58.5 -20.5t27 -56.5t-20.5 -59t-56.5 -27h-6zM236 493q-13 25 -39 38l210 210l51 -25zM196 531q-21 11 -44 10l-9 -1l40 256q21 -10 45 -9l8 1zM560 553l48 311q21 -10 44 -9l10 1l-46 -294zM755 576l-118 60l8 56l135 -68q-20 -20 -25 -48zM781 625l-119 231 q28 5 48 25l119 -231q-28 -5 -48 -25zM306 654l-68 134q28 5 48 25l60 -119zM568 671l-281 143q19 20 24 48l265 -135zM513 771l-51 25l106 107q13 -25 39 -38zM222 795q-32 0 -55.5 22.5t-25 55t21 57.5t56 27t58.5 -20.5t27 -56t-20.5 -58.5t-56.5 -27h-5zM311 863 q2 9 1 18q-1 19 -9 35l256 41q-1 -9 -1 -18q1 -18 10 -35zM646 863q-32 0 -55 22.5t-24.5 55t20.5 58t56 27t59 -21t27 -56t-20.5 -58.5t-56.5 -27h-6z"></path>
+            </g>
+          </svg>
+        </span>
+      </a>
+      <span class="fediverse-input-wrapper" style="display: none;">
+        <input
+          type="text"
+          placeholder="Enter Fediverse Instance URL"
+          class="fediverse-input"
+          onkeypress="handleFediverseShare(event, '\/\/localhost:1313\/blog\/cuda\/streams\/', 'Share')" />
+        <button
+          class="fediverse-check-button"
+          onclick="handleFediverseShareButton(this, '\/\/localhost:1313\/blog\/cuda\/streams\/', 'Share')">
+          Share
+        </button>
+      </span>
+    </span>
+  
+
+
+  
+  
+    <button
+      class="share-link share-copy"
+      onclick="copyToClipboard(this, '\/\/localhost:1313\/blog\/cuda\/streams\/')">
+      <span class="share-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path
+            d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7-1c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 17H5V5h14v14z" />
+        </svg>
+      </span>
+    </button>
+  
+
+</div>
+
+<script>
+  
+  function toggleFediverseInput(element) {
+    const container = element.closest(".fediverse-share");
+    const inputContainer = container.querySelector(".fediverse-input-wrapper");
+    inputContainer.style.display =
+      inputContainer.style.display === "none" ? "block" : "none";
+  }
+
+  
+  function handleFediverseShare(event, url, title) {
+    if (event.key === "Enter") {
+      const input = event.target;
+      let instanceUrl = input.value.trim();
+      if (instanceUrl) {
+        if (!instanceUrl.startsWith("https://")) {
+          instanceUrl = `https://${instanceUrl}`;
+        }
+        const shareUrl = `${instanceUrl}/share?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`;
+        window.open(shareUrl, "_blank", "noopener");
+      }
+    }
+  }
+
+  
+  function handleFediverseShareButton(button, url, title) {
+    const input = button.previousElementSibling;
+    let instanceUrl = input.value.trim();
+    if (instanceUrl) {
+      if (!instanceUrl.startsWith("https://")) {
+        instanceUrl = `https://${instanceUrl}`;
+      }
+      const shareUrl = `${instanceUrl}/share?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`;
+      window.open(shareUrl, "_blank", "noopener");
+    }
+  }
+
+  
+  function copyToClipboard(button, text) {
+    navigator.clipboard.writeText(text).then(() => {
+      const icon = button.querySelector("svg path");
+      const originalIconPath =
+        "M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7-1c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 17H5V5h14v14z";
+      const checkIconPath =
+        "M9 16.2l-3.5-3.5-1.4 1.4L9 19 20 8l-1.4-1.4L9 16.2z";
+
+      
+      icon.setAttribute("d", checkIconPath);
+
+      
+      setTimeout(() => {
+        icon.setAttribute("d", originalIconPath);
+      }, 1000);
+    });
+  }
+</script>
+
+            </div>
+          </div>
+          
+          
+        </article>
+      </div>
+
+      
+      
+      
+      
+    </div>
+  </section>
+
+    </main>
+
+    
+    <footer class="bg-theme-light dark:bg-darkmode-body">
+  <div class="container">
+    <div class="row items-center py-10">
+      <div class="lg:col-3 mb-8 text-center lg:mb-0 lg:text-left">
+        
+        <a
+          class="navbar-brand inline-block"
+          href="/">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+  
+  
+  
+
+
+  
+  
+    
+    
+  
+
+
+  
+  
+      
+      
+    
+    
+    
+    
+    
+    
+  
+  
+
+  
+  
+    
+    
+      
+      
+
+
+      
+      
+        
+        
+        
+        
+
+        
+        
+        
+      
+      
+    
+  
+  
+
+  
+    <img
+      fetchpriority="high"
+      decoding="async"
+      class="img img-light"
+      width="70"
+      height="32"
+      src="/images/logo_hu_17cd06bba4982a16.webp"
+      alt="Viswa Ravichandran Blog"
+      onerror="this.onerror=null;this.src='\/images\/logo_hu_84f2dc06b2966914.png';" />
+
+    <img
+      fetchpriority="high"
+      decoding="async"
+      class="img img-dark"
+      width="70"
+      height="32"
+      src="/images/logo-darkmode_hu_17cd06bba4982a16.webp"
+      alt="Viswa Ravichandran Blog"
+      onerror="this.onerror=null;this.src='\/images\/logo-darkmode_hu_84f2dc06b2966914.png';" />
+  
+  
+
+
+        </a>
+      </div>
+
+      
+      <div class="lg:col-6 mb-8 text-center lg:mb-0">
+        <ul>
+          
+            <li class="m-3 inline-block">
+              <a
+                
+                href="
+                  /
+                "
+                >About</a
+              >
+            </li>
+          
+            <li class="m-3 inline-block">
+              <a
+                
+                href="
+                  /blog
+                "
+                >Blog</a
+              >
+            </li>
+          
+            <li class="m-3 inline-block">
+              <a
+                
+                href="
+                  /contact
+                "
+                >Contact</a
+              >
+            </li>
+          
+        </ul>
+      </div>
+
+      
+      <div class="lg:col-3 mb-8 text-center lg:mb-0 lg:mt-0 lg:text-right">
+        <ul class="social-icons">
+          
+            <li>
+              <a
+                target="_blank"
+                aria-label="twitter"
+                rel="nofollow noopener"
+                href="https://x.com/viswa_ravi_">
+                <i class="fab fa-twitter"></i>
+              </a>
+            </li>
+          
+            <li>
+              <a
+                target="_blank"
+                aria-label="github"
+                rel="nofollow noopener"
+                href="https://github.com/viswaravi">
+                <i class="fab fa-github"></i>
+              </a>
+            </li>
+          
+            <li>
+              <a
+                target="_blank"
+                aria-label="linkedin"
+                rel="nofollow noopener"
+                href="https://www.linkedin.com/in/viswa-ravichandran-1471b5126/">
+                <i class="fab fa-linkedin"></i>
+              </a>
+            </li>
+          
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="border-border dark:border-darkmode-border border-t py-7">
+    <div class="text-light dark:text-darkmode-light container text-center">
+      <p>
+        &copy;
+        Viswa Ravichandran
+      </p>
+    </div>
+  </div>
+</footer>
+
+
+
+    
+    
+
+
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+
+
+
+
+
+
+
+
+
+
+
+<script
+  crossorigin="anonymous"
+  integrity=""
+  src="/js/script.js"></script>
+
+
+<script
+  defer
+  async
+  crossorigin="anonymous"
+  integrity=""
+  src="/js/script-lazy.js"></script>
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  </body>
+</html>

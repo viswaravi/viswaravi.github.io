@@ -1,10 +1,33 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>CUDA-Adventures on Pixel Bytes</title><link>/categories/cuda-adventures/</link><description>Recent content in CUDA-Adventures on Pixel Bytes</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Mon, 04 Apr 2022 05:00:00 +0000</lastBuildDate><atom:link href="/categories/cuda-adventures/index.xml" rel="self" type="application/rss+xml"/><item><title>Memory Latency Hiding in CUDA using Streams</title><link>/blog/cuda/streams/</link><pubDate>Mon, 04 Apr 2022 05:00:00 +0000</pubDate><guid>/blog/cuda/streams/</guid><description>&lt;p&gt;I’m starting a new CUDA project to deepen my understanding of GPU acceleration. I’ll begin with simple tasks like vector addition and move on to more involved projects, including image processing and language model optimizations. While this series won’t be a step-by-step tutorial, I’ll share the interesting parts of my implementations, highlighting the challenges I faced and the reasoning behind my decisions. For the complete code, feel free to check out the &lt;a href="https://github.com/viswaravi/CUDA-Adventures"
-
-
-
-
- target="_blank"
- 
-
-
-&gt;project repository&lt;/a&gt;.&lt;/p&gt;</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>CUDA-Adventures on Pixel Bytes</title>
+    <link>//localhost:1313/categories/cuda-adventures/</link>
+    <description>Recent content in CUDA-Adventures on Pixel Bytes</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 04 Apr 2022 05:00:00 +0000</lastBuildDate>
+    <atom:link href="//localhost:1313/categories/cuda-adventures/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>CUDA Kernel Programming: Reduction</title>
+      <link>//localhost:1313/blog/cuda/kernels/reduction/</link>
+      <pubDate>Mon, 04 Apr 2022 05:00:00 +0000</pubDate>
+      <guid>//localhost:1313/blog/cuda/kernels/reduction/</guid>
+      <description>&lt;h1 id=&#34;reduction&#34;&gt;Reduction&lt;/h1&gt;&#xA;&lt;h2 id=&#34;cpu-baseline&#34;&gt;CPU Baseline&lt;/h2&gt;&#xA;&lt;h2 id=&#34;recursive-reduction---gpu&#34;&gt;Recursive Reduction - GPU&lt;/h2&gt;&#xA;&lt;h3 id=&#34;reduction-with-interleaved-addressing---divergent-branches&#34;&gt;Reduction with Interleaved Addressing - Divergent branches&lt;/h3&gt;&#xA;&lt;h3 id=&#34;reduction-with-sequential-addressing---bank-conflicts&#34;&gt;Reduction with Sequential Addressing - Bank Conflicts&lt;/h3&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;stall_wait is reduced by 2x, but the overall time is increased by 2x due to bank conflicts. This is because threads in the same warp access different memory addresses that map to the same memory bank, causing serialization of memory accesses and increasing latency.&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;&lt;code&gt;stall_wait&lt;/code&gt; → divergent warp, waiting for divergent threads to finish executing&#xA;&lt;code&gt;stall_barrier&lt;/code&gt; →wait on fixed latency exec dependency (harmless)&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Memory Latency Hiding in CUDA using Streams</title>
+      <link>//localhost:1313/blog/cuda/kernels/addition/</link>
+      <pubDate>Mon, 04 Apr 2022 05:00:00 +0000</pubDate>
+      <guid>//localhost:1313/blog/cuda/kernels/addition/</guid>
+      <description>&lt;p&gt;I’m starting a new CUDA project to deepen my understanding of GPU acceleration. I’ll begin with simple tasks like vector addition and move on to more involved projects, including image processing and language model optimizations. While this series won’t be a step-by-step tutorial, I’ll share the interesting parts of my implementations, highlighting the challenges I faced and the reasoning behind my decisions. For the complete code, feel free to check out the &lt;a href=&#34;https://github.com/viswaravi/CUDA-Adventures&#34;&#xA;&#xA;&#xA;&#xA;&#xA; target=&#34;_blank&#34;&#xA; &#xA;&#xA;&#xA;&gt;project repository&lt;/a&gt;.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Reduction, Prefix sum</title>
+      <link>//localhost:1313/blog/cuda/kernels/reduction-asm/</link>
+      <pubDate>Mon, 04 Apr 2022 05:00:00 +0000</pubDate>
+      <guid>//localhost:1313/blog/cuda/kernels/reduction-asm/</guid>
+      <description>&lt;h2 id=&#34;what-i-will-explore-in-this-post&#34;&gt;What I will explore in this post&lt;/h2&gt;&#xA;&lt;p&gt;In the sections below, I will compare the PTX and SASS generated for a few variants of the vector addition kernel:&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

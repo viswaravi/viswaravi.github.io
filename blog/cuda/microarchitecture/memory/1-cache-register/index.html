@@ -1,0 +1,2358 @@
+<!doctype html>
+<html
+  itemscope
+  class="dark"
+  lang="en-us"
+  itemtype="http://schema.org/WebPage">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    
+    <meta charset="utf-8" />
+
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, maximum-scale=5" />
+
+
+<meta name="theme-name" content="hugoplate" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="shortcut icon" href="/images/favicon_hu_c11345cc498a9505.png" type="image/x-icon">
+<link rel="icon" href="/images/favicon_hu_c11345cc498a9505.png" type="image/x-icon">
+<link rel="icon" type="image/png" sizes="48x48" href="/images/favicon_hu_9a29a06ba7bf90e.png">
+<link rel="icon" type="image/png" sizes="96x96" href="/images/favicon_hu_c11345cc498a9505.png">
+<link rel="apple-touch-icon" sizes="144x144" href="/images/favicon_hu_c6933bb9c9acc84f.png">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <base href="//localhost:1313/blog/cuda/microarchitecture/memory/1-cache-register/" />
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+
+
+<title>CUDA Memory Hierarchy: Understanding NVIDIA GPU Memory Architecture</title>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <meta
+    name="keywords"
+    content="personal blog, HPC, Machine Learning, tech stuff, Computer Vision, AI, CUDA, Python, Deep Learning" />
+
+
+
+
+<meta name="description" content="A beginner-friendly introduction to CUDA memory hierarchy: what it is, how it fits into NVIDIA&#39;s GPU architecture, and how it affects performance." />
+
+
+
+  <meta name="author" content="viswa.ravichandran" />
+
+
+
+
+
+
+
+  
+
+  
+  
+  
+
+
+  
+  
+
+
+  
+
+
+
+
+
+<meta property="og:title" content="CUDA Memory Hierarchy: Understanding NVIDIA GPU Memory Architecture" />
+<meta property="og:description" content="A beginner-friendly introduction to CUDA memory hierarchy: what it is, how it fits into NVIDIA&#39;s GPU architecture, and how it affects performance." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="//localhost:1313/blog/cuda/microarchitecture/memory/1-cache-register/" />
+
+
+<meta name="twitter:title" content="CUDA Memory Hierarchy: Understanding NVIDIA GPU Memory Architecture" />
+<meta name="twitter:description" content="A beginner-friendly introduction to CUDA memory hierarchy: what it is, how it fits into NVIDIA&#39;s GPU architecture, and how it affects performance." />
+
+
+  <meta name="twitter:site" content="@https://x.com/viswa_ravi_" />
+
+
+  <meta name="twitter:creator" content="@viswa.ravichandran" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+  let indexURL = "//localhost:1313/searchindex.json";
+  let includeSectionsInSearch = ["blog"];
+  let search_no_results = "No results for";
+  let search_initial_message = "Type something to search..";
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    
+<meta http-equiv="x-dns-prefetch-control" content="on" />
+<link rel="preconnect" href="https://use.fontawesome.com" crossorigin />
+<link rel="preconnect" href="//cdnjs.cloudflare.com" />
+<link rel="preconnect" href="//www.googletagmanager.com" />
+<link rel="preconnect" href="//www.google-analytics.com" />
+<link rel="dns-prefetch" href="https://use.fontawesome.com" />
+<link rel="dns-prefetch" href="//ajax.googleapis.com" />
+<link rel="dns-prefetch" href="//cdnjs.cloudflare.com" />
+<link rel="dns-prefetch" href="//www.googletagmanager.com" />
+<link rel="dns-prefetch" href="//www.google-analytics.com" />
+<link rel="dns-prefetch" href="//fonts.googleapis.com" />
+<link rel="dns-prefetch" href="//connect.facebook.net" />
+<link rel="dns-prefetch" href="//platform.linkedin.com" />
+<link rel="dns-prefetch" href="//platform.twitter.com" />
+
+
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<script>
+  (function () {
+    const googleFont = document.createElement("link");
+    googleFont.href = "https://fonts.googleapis.com/css2?family=Heebo:wght@400;600&family=Signika:wght@500;700&display=swap";
+    googleFont.type = "text/css";
+    googleFont.rel = "stylesheet";
+    document.head.appendChild(googleFont);
+  })();
+</script>
+
+
+
+
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+<link
+  href="/css/style.css"
+  integrity=""
+  rel="stylesheet" />
+
+
+<link
+  defer
+  async
+  rel="stylesheet"
+  href="/css/style-lazy.css"
+  integrity=""
+  media="print"
+  onload="this.media='all'; this.onload=null;" />
+
+
+  </head>
+
+  <body>
+    
+    
+      
+
+
+
+
+
+      
+      <div
+  class="fixed left-0 top-0 z-50 flex w-[30px] items-center justify-center bg-gray-200 py-[2.5px] text-[12px] uppercase text-black sm:bg-red-200 md:bg-yellow-200 lg:bg-green-200 xl:bg-blue-200 2xl:bg-pink-200">
+  <span class="block sm:hidden">all</span>
+  <span class="hidden sm:block md:hidden">sm</span>
+  <span class="hidden md:block lg:hidden">md</span>
+  <span class="hidden lg:block xl:hidden">lg</span>
+  <span class="hidden xl:block 2xl:hidden">xl</span>
+  <span class="hidden 2xl:block">2xl</span>
+</div>
+
+    
+
+
+    
+    
+
+
+
+
+
+    
+    <header
+  class="header  z-30">
+  <nav class="navbar container">
+    
+    <div class="order-0">
+      
+      <a class="navbar-brand block" href="/">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+  
+  
+  
+
+
+  
+  
+    
+    
+  
+
+
+  
+  
+      
+      
+    
+    
+    
+    
+    
+    
+  
+  
+
+  
+  
+    
+    
+      
+      
+
+
+      
+      
+        
+        
+        
+        
+
+        
+        
+        
+      
+      
+    
+  
+  
+
+  
+    <img
+      fetchpriority="high"
+      decoding="async"
+      class="img img-light"
+      width="70"
+      height="32"
+      src="/images/logo_hu_17cd06bba4982a16.webp"
+      alt="Viswa Ravichandran Blog"
+      onerror="this.onerror=null;this.src='\/images\/logo_hu_84f2dc06b2966914.png';" />
+
+    <img
+      fetchpriority="high"
+      decoding="async"
+      class="img img-dark"
+      width="70"
+      height="32"
+      src="/images/logo-darkmode_hu_17cd06bba4982a16.webp"
+      alt="Viswa Ravichandran Blog"
+      onerror="this.onerror=null;this.src='\/images\/logo-darkmode_hu_84f2dc06b2966914.png';" />
+  
+  
+
+
+      </a>
+    </div>
+
+    
+    <input id="nav-toggle" type="checkbox" class="hidden" />
+    <label
+      for="nav-toggle"
+      class="order-3 cursor-pointer flex items-center lg:hidden text-dark dark:text-white lg:order-1">
+      <svg id="show-button" class="h-6 fill-current block" viewBox="0 0 20 20">
+        <title>Menu Open</title>
+        <path d="M0 3h20v2H0V3z m0 6h20v2H0V9z m0 6h20v2H0V0z"></path>
+      </svg>
+      <svg id="hide-button" class="h-6 fill-current hidden" viewBox="0 0 20 20">
+        <title>Menu Close</title>
+        <polygon
+          points="11 9 22 9 22 11 11 11 11 22 9 22 9 11 -2 11 -2 9 9 9 9 -2 11 -2"
+          transform="rotate(45 10 10)"></polygon>
+      </svg>
+    </label>
+    
+
+    
+    <ul
+      id="nav-menu"
+      class="navbar-nav order-3 hidden lg:flex w-full pb-6 lg:order-1 lg:w-auto lg:space-x-2 lg:pb-0 xl:space-x-8">
+      
+      
+        
+        
+        
+        
+          <li class="nav-item">
+            <a
+              class="nav-link text-lg "
+              
+              href="/"
+              >About</a
+            >
+          </li>
+        
+      
+        
+        
+        
+        
+          <li class="nav-item">
+            <a
+              class="nav-link text-lg "
+              
+              href="/blog"
+              >Blog</a
+            >
+          </li>
+        
+      
+
+
+      
+      
+    </ul>
+
+    
+    <div class="order-1 ml-auto flex items-center md:order-2 lg:ml-0">
+      
+        
+          <button
+            aria-label="search"
+            
+              class="border-border text-dark hover:text-primary
+              dark:border-darkmode-border mr-5 inline-block border-r
+              lg:border-r-0 pr-5 lg:pr-0 text-xl dark:text-white
+              dark:hover:text-darkmode-primary"
+            
+            data-target="search-modal">
+            <i class="fa-solid fa-search"></i>
+          </button>
+        
+      
+
+      
+
+
+      
+
+
+
+
+
+      
+      
+    </div>
+  </nav>
+</header>
+
+    
+
+
+
+
+  
+    <div
+      class="search-modal "
+      aria-hidden="true"
+      style="--color-primary: #121212">
+      <div data-target="close-search-modal" class="search-modal-overlay"></div>
+      <div
+        class="search-wrapper"
+        data-image="true"
+        data-description="true"
+        data-tags="true"
+        data-categories="true">
+        <div class="search-wrapper-header">
+          <label for="search-modal-input" style="margin-top:-1px">
+            <span class="sr-only">search icon</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 512 512"
+              height="18"
+              width="18"
+              class="search-icon"
+              data-type="search">
+              <path
+                fill="currentColor"
+                d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z" />
+            </svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 512 512"
+              height="18"
+              width="18"
+              class="search-reset"
+              data-type="reset">
+              <path
+                fill="currentColor"
+                d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c9.4-9.4 24.6-9.4 33.9 0l47 47 47-47c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-47 47 47 47c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-47-47-47 47c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l47-47-47-47c-9.4-9.4-9.4-24.6 0-33.9z" />
+            </svg>
+          </label>
+          <input
+            id="search-modal-input"
+            type="text"
+            data-search-input
+            autocomplete="off"
+            aria-label="Search"
+            placeholder="Search Post..." />
+        </div>
+        <div class="search-wrapper-body">
+          <div class="search-result" data-search-result></div>
+          <span class="search-result-empty">
+            Type something to search..
+          </span>
+        </div>
+        <div class="search-wrapper-footer">
+          <span>
+            <kbd>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                fill="currentColor"
+                viewBox="0 0 16 16">
+                <path
+                  d="M3.204 11h9.592L8 5.519 3.204 11zm-.753-.659 4.796-5.48a1 1 0 0 1 1.506 0l4.796 5.48c.566.647.106 1.659-.753 1.659H3.204a1 1 0 0 1-.753-1.659z" />
+              </svg>
+            </kbd>
+            <kbd>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                fill="currentColor"
+                style="margin-top:1px;"
+                viewBox="0 0 16 16">
+                <path
+                  d="M3.204 5h9.592L8 10.481 3.204 5zm-.753.659 4.796 5.48a1 1 0 0 0 1.506 0l4.796-5.48c.566-.647.106-1.659-.753-1.659H3.204a1 1 0 0 0-.753 1.659z" />
+              </svg>
+            </kbd>
+            to navigate
+          </span>
+          <span>
+            <kbd>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="12"
+                height="12"
+                fill="currentColor"
+                style="display:inline-block;"
+                viewBox="0 0 16 16">
+                <path
+                  fill-rule="evenodd"
+                  d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5z" />
+              </svg>
+            </kbd>
+            to select
+          </span>
+          <span class="search-result-info"></span>
+          <span data-target="close-search-modal">
+            <kbd>ESC</kbd> to close
+          </span>
+        </div>
+      </div>
+    </div>
+  
+
+
+
+
+    <main>
+      
+  <section class="section pt-7">
+    <div class="container">
+      <div class="row justify-center">
+        <article class="lg:col-10">
+          
+          
+          
+
+
+          
+          <h1 class="h2 mb-4">
+            CUDA Memory Hierarchy: Part 1 Basic Architecture, Cache Associativity and Register Files
+          </h1>
+
+          
+          <ul class="mb-4">
+            
+            
+            
+              <li class="mr-4 inline-block">
+                <i class="fa-regular fa-folder mr-2"></i>
+                
+                  <a
+                    href="/categories/cuda/"
+                    class=""
+                    >Cuda
+                      ,
+                    
+                  </a>
+                
+                  <a
+                    href="/categories/microarchitecture/"
+                    class=""
+                    >Microarchitecture
+                      ,
+                    
+                  </a>
+                
+                  <a
+                    href="/categories/gpu/"
+                    class=""
+                    >Gpu
+                  </a>
+                
+              </li>
+            
+            
+            <li class="mr-4 inline-block">
+              <i class="fa-regular fa-clock mr-2"></i>
+              May 16, 2026
+            </li>
+          </ul>
+
+          
+          <div class="content mb-10">
+            
+
+ 
+  
+
+<details open class="table-of-content blog">
+  <summary>
+    
+      Table of Contents
+    
+  </summary>
+  <nav id="TableOfContents">
+  <ol>
+    <li><a href="#introduction">Introduction</a>
+      <ol>
+        <li>
+          <ol>
+            <li><a href="#placeholder-insert-hero-diagram-of-the-gpu-memory-hierarchy">[PLACEHOLDER: Insert hero diagram of the GPU memory hierarchy]</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#from-tpc-centric-tesla-to-sm-centric-modern-gpus">From TPC-Centric Tesla to SM-Centric Modern GPUs</a>
+      <ol>
+        <li>
+          <ol>
+            <li><a href="#placeholder-insert-tesla-gtx-200-architecture-image">[PLACEHOLDER: Insert Tesla GTX 200 architecture image]</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#the-gpu-memory-hierarchy-at-a-glance">The GPU Memory Hierarchy at a Glance</a></li>
+    <li><a href="#cpu-baseline-why-gpu-memory-design-looks-so-different">CPU Baseline: Why GPU Memory Design Looks So Different</a></li>
+    <li><a href="#cache-associativity-the-minimum-theory-you-need">Cache Associativity: The Minimum Theory You Need</a>
+      <ol>
+        <li><a href="#sets-tags-and-ways">Sets, tags, and ways</a></li>
+        <li><a href="#lookup-flow">Lookup flow</a></li>
+        <li><a href="#why-associativity-costs-hardware">Why associativity costs hardware</a></li>
+      </ol>
+    </li>
+    <li><a href="#why-gpu-sm-caches-tend-to-be-simpler-than-cpu-caches">Why GPU SM Caches Tend to Be Simpler Than CPU Caches</a></li>
+    <li><a href="#associativity-and-performance-where-it-actually-shows-up">Associativity and Performance: Where It Actually Shows Up</a>
+      <ol>
+        <li><a href="#a-simple-example">A simple example</a></li>
+        <li><a href="#what-usually-helps">What usually helps</a></li>
+      </ol>
+    </li>
+    <li><a href="#registers-the-fastest-memory-and-the-first-occupancy-limit">Registers: The Fastest Memory, and the First Occupancy Limit</a></li>
+    <li><a href="#cpu-registers-vs-gpu-registers">CPU Registers vs GPU Registers</a>
+      <ol>
+        <li><a href="#cpu-baseline">CPU baseline</a></li>
+        <li><a href="#gpu-model">GPU model</a></li>
+      </ol>
+    </li>
+    <li><a href="#what-the-register-file-looks-like-at-a-high-level">What the Register File Looks Like at a High Level</a>
+      <ol>
+        <li>
+          <ol>
+            <li><a href="#placeholder-insert-smsmsp-register-diagram">[PLACEHOLDER: Insert SM/SMSP register diagram]</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#ptx-registers-vs-sass-registers">PTX Registers vs SASS Registers</a>
+      <ol>
+        <li><a href="#ptx-view">PTX view</a></li>
+        <li><a href="#sass-view">SASS view</a></li>
+      </ol>
+    </li>
+    <li><a href="#why-registers-affect-performance-so-strongly">Why Registers Affect Performance So Strongly</a>
+      <ol>
+        <li><a href="#1-register-count-limits-occupancy">1. Register count limits occupancy</a></li>
+        <li><a href="#2-too-few-registers-causes-spilling">2. Too few registers causes spilling</a></li>
+        <li><a href="#3-register-pressure-changes-code-generation">3. Register pressure changes code generation</a></li>
+      </ol>
+    </li>
+    <li><a href="#a-small-but-important-nuance-higher-occupancy-is-not-the-final-goal">A Small but Important Nuance: Higher Occupancy Is Not the Final Goal</a></li>
+    <li><a href="#what-about-register-banks-and-operand-collectors">What About Register Banks and Operand Collectors?</a></li>
+    <li><a href="#how-cache-associativity-and-registers-meet-in-real-kernels">How Cache Associativity and Registers Meet in Real Kernels</a></li>
+    <li><a href="#what-to-look-for-in-profiling">What to Look for in Profiling</a></li>
+    <li><a href="#nsight-compute">Nsight Compute</a></li>
+    <li><a href="#nsight-systems">Nsight Systems</a></li>
+    <li><a href="#visual-profiler--nvvp-legacy">Visual Profiler / <code>nvvp</code> (legacy)</a>
+      <ol>
+        <li>
+          <ol>
+            <li><a href="#placeholder-insert-nsight-compute-screenshot">[PLACEHOLDER: Insert Nsight Compute screenshot]</a></li>
+            <li><a href="#placeholder-insert-nsight-systems-timeline-screenshot">[PLACEHOLDER: Insert Nsight Systems timeline screenshot]</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#practical-rules-of-thumb">Practical Rules of Thumb</a></li>
+    <li><a href="#closing">Closing</a></li>
+    <li><a href="#references">References</a></li>
+  </ol>
+</nav>
+</details>
+
+            <h2 id="introduction">Introduction</h2>
+<p>When people first learn CUDA memory hierarchy, they usually see a pyramid: <strong>registers → shared memory / L1 → L2 → HBM/DRAM</strong>. That picture is useful, but it hides the real question:</p>
+<blockquote>
+<p>Which memory structures actually decide whether a warp runs smoothly or stalls?</p>
+</blockquote>
+<p>For most kernels, the first answers are:</p>
+<ol>
+<li><strong>the SM-local cache path</strong>, where associativity and access pattern decide whether loads are cheap or conflict-heavy, and</li>
+<li><strong>the register file</strong>, where per-thread register usage decides occupancy, spilling, and how well the GPU can hide latency.</li>
+</ol>
+<p>This post is the first part of a memory-hierarchy series. The goal here is not to dive into every cache level in isolation yet. Instead, it is to build the big picture first, then explain two ideas that repeatedly show up in performance work:</p>
+<ul>
+<li><strong>cache associativity</strong>, and</li>
+<li><strong>register pressure</strong>.</li>
+</ul>
+<p>Once those two concepts click, a lot of profiler output starts making more sense.</p>
+<h4 id="placeholder-insert-hero-diagram-of-the-gpu-memory-hierarchy">[PLACEHOLDER: Insert hero diagram of the GPU memory hierarchy]</h4>
+<p>Describe a vertical diagram with <code>Registers</code> at the top, <code>Shared Memory / L1 / Texture Cache</code> in the middle, <code>L2 Cache</code> below that, and <code>HBM/DRAM</code> at the bottom. Add arrows showing that latency rises and capacity grows as you move downward.</p>
+<hr>
+<h2 id="from-tpc-centric-tesla-to-sm-centric-modern-gpus">From TPC-Centric Tesla to SM-Centric Modern GPUs</h2>
+<p>Early Tesla-era diagrams often emphasized the <strong>Thread Processing Cluster (TPC)</strong> as the visible building block.</p>
+<ul>
+<li>A TPC grouped SMs together.</li>
+<li>Texture hardware and parts of the cache path were often shown at that level.</li>
+<li>This made sense for a graphics-first design lineage.</li>
+</ul>
+<p>But for CUDA programmers, modern NVIDIA GPUs are much easier to reason about if you treat the <strong>SM</strong> as the real center of the machine.</p>
+<p>Why?</p>
+<ol>
+<li><strong>Warps live at the SM.</strong> Scheduling, issue, and latency hiding all happen there.</li>
+<li><strong>Registers are allocated at the SM.</strong> Register pressure is therefore an SM resource problem.</li>
+<li><strong>Shared memory is per SM.</strong> So are many of the most important occupancy trade-offs.</li>
+<li><strong>Modern L1/TEX behavior is tightly coupled to the SM.</strong> NVIDIA tuning guides for Volta, Ampere, and Hopper describe a unified shared-memory / L1 / texture subsystem, with runtime carveout choices.</li>
+</ol>
+<p>So the programmer&rsquo;s mental model should be:</p>
+<blockquote>
+<p>A GPU is a large collection of SMs. Each SM is a throughput-oriented execution engine with its own register resources, warp schedulers, and an SM-local memory subsystem.</p>
+</blockquote>
+<h4 id="placeholder-insert-tesla-gtx-200-architecture-image">[PLACEHOLDER: Insert Tesla GTX 200 architecture image]</h4>
+<p>Use a historical diagram that highlights <code>TPC</code>, <code>SM</code>, and texture/cache placement. Add annotations showing why later CUDA tuning shifted the programmer focus from <code>TPC</code> to <code>SM</code>.</p>
+<hr>
+<h2 id="the-gpu-memory-hierarchy-at-a-glance">The GPU Memory Hierarchy at a Glance</h2>
+<p>Before discussing associativity and registers, anchor the whole hierarchy:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Level</th>
+          <th>Scope</th>
+          <th>Physically Where</th>
+          <th>Why It Exists</th>
+          <th>Performance Story</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Registers</td>
+          <td>Per thread, allocated from SM resources</td>
+          <td>On chip</td>
+          <td>Hold thread-private live values</td>
+          <td>Fastest storage, but limited; too many hurts occupancy</td>
+      </tr>
+      <tr>
+          <td>Shared Memory</td>
+          <td>Per thread block / per SM</td>
+          <td>On chip</td>
+          <td>Software-managed reuse and communication</td>
+          <td>Very fast when bank-friendly; programmer controlled</td>
+      </tr>
+      <tr>
+          <td>L1 / Texture Cache</td>
+          <td>Per SM or closely coupled to SM resources</td>
+          <td>On chip</td>
+          <td>Catch local/global/texture traffic and help coalescing</td>
+          <td>Fast, but small and throughput-oriented</td>
+      </tr>
+      <tr>
+          <td>L2 Cache</td>
+          <td>Chip-wide</td>
+          <td>On chip</td>
+          <td>Shared cache between all SMs and DRAM</td>
+          <td>Last on-chip cache before device memory</td>
+      </tr>
+      <tr>
+          <td>Local Memory</td>
+          <td>Per thread address space</td>
+          <td>Usually in device memory</td>
+          <td>Spill target and storage for some thread-private objects</td>
+          <td>Despite the name, it is <strong>not</strong> on-chip like registers</td>
+      </tr>
+      <tr>
+          <td>HBM / DRAM</td>
+          <td>Device-wide</td>
+          <td>Off chip</td>
+          <td>Large backing store</td>
+          <td>High bandwidth, high latency</td>
+      </tr>
+  </tbody>
+</table>
+<p>Two important clarifications for beginners:</p>
+<ul>
+<li><strong>Local memory is not local to the SM.</strong> It is thread-private address space, but physically it has global-memory-like behavior.</li>
+<li><strong>Shared memory and L1 are related but not identical.</strong> On recent architectures they share underlying on-chip resources, but one is programmer-managed while the other is hardware-managed.</li>
+</ul>
+<hr>
+<h2 id="cpu-baseline-why-gpu-memory-design-looks-so-different">CPU Baseline: Why GPU Memory Design Looks So Different</h2>
+<p>CPU cache design is built around a very different objective:</p>
+<ul>
+<li>keep <strong>a few threads</strong> moving,</li>
+<li>minimize latency for each miss,</li>
+<li>and spend more hardware budget to reduce conflict misses.</li>
+</ul>
+<p>GPU design is built around another objective:</p>
+<ul>
+<li>keep <strong>many warps</strong> in flight,</li>
+<li>tolerate misses through thread-level parallelism,</li>
+<li>and replicate simpler structures across many SMs.</li>
+</ul>
+<p>That is why the same phrase — “cache miss” — means something different emotionally on CPU vs GPU.</p>
+<ul>
+<li>On a CPU, a miss often directly threatens forward progress.</li>
+<li>On a GPU, a miss is expected, as long as enough other warps are ready to run.</li>
+</ul>
+<p>This difference is the backdrop for both associativity and register allocation.</p>
+<hr>
+<h2 id="cache-associativity-the-minimum-theory-you-need">Cache Associativity: The Minimum Theory You Need</h2>
+<p>Cache associativity answers one question:</p>
+<blockquote>
+<p>If an address maps to one cache set, how many different lines can live in that set at the same time?</p>
+</blockquote>
+<h3 id="sets-tags-and-ways">Sets, tags, and ways</h3>
+<p>A cache is divided into <strong>sets</strong>.
+Each address maps to exactly one set.
+Inside that set, the cache may have one or more candidate slots, often called <strong>ways</strong>.</p>
+<p>So:</p>
+<ul>
+<li><strong>Direct-mapped cache</strong> = 1 way per set</li>
+<li><strong>4-way set associative cache</strong> = 4 lines per set</li>
+<li><strong>Fully associative cache</strong> = any line can go anywhere</li>
+</ul>
+<p>The more ways you have, the easier it is to avoid conflicts. But the lookup logic gets more expensive.</p>
+<h3 id="lookup-flow">Lookup flow</h3>
+<p>For any cache access, hardware broadly does this:</p>
+<ol>
+<li>Use index bits to choose the set.</li>
+<li>Compare the incoming tag against the candidate entries in that set.</li>
+<li>If one matches, it is a hit.</li>
+<li>Otherwise, it is a miss and one line must eventually be replaced.</li>
+</ol>
+<p>In shorthand:</p>
+<div class="highlight"><pre tabindex="0" style="color:#abb2bf;background-color:#282c34;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>address -&gt; set index -&gt; tag compare(s) -&gt; hit or miss
+</span></span></code></pre></div><h3 id="why-associativity-costs-hardware">Why associativity costs hardware</h3>
+<p>For a 1-way cache:</p>
+<div class="highlight"><pre tabindex="0" style="color:#abb2bf;background-color:#282c34;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>index -&gt; 1 slot -&gt; 1 compare -&gt; done
+</span></span></code></pre></div><p>For a 4-way cache:</p>
+<div class="highlight"><pre tabindex="0" style="color:#abb2bf;background-color:#282c34;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>index -&gt; 4 slots
+</span></span><span style="display:flex;"><span>      -&gt; 4 tag compares in parallel
+</span></span><span style="display:flex;"><span>      -&gt; match logic
+</span></span><span style="display:flex;"><span>      -&gt; select returned line
+</span></span></code></pre></div><p>Higher associativity usually means:</p>
+<ul>
+<li>more comparators,</li>
+<li>more mux logic,</li>
+<li>more metadata,</li>
+<li>more power,</li>
+<li>and sometimes a longer critical path.</li>
+</ul>
+<p>That trade-off is acceptable in CPU designs that optimize hard for miss reduction. GPUs make a different compromise.</p>
+<hr>
+<h2 id="why-gpu-sm-caches-tend-to-be-simpler-than-cpu-caches">Why GPU SM Caches Tend to Be Simpler Than CPU Caches</h2>
+<p>The key intuition is this:</p>
+<blockquote>
+<p>A CPU often spends extra hardware to <strong>prevent</strong> a miss. A GPU often spends extra warps to <strong>survive</strong> a miss.</p>
+</blockquote>
+<table>
+  <thead>
+      <tr>
+          <th>Design Goal</th>
+          <th>CPU Cache</th>
+          <th>GPU SM-Side Cache</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Primary target</td>
+          <td>Single-thread latency</td>
+          <td>Throughput across many warps</td>
+      </tr>
+      <tr>
+          <td>Typical response to misses</td>
+          <td>Avoid them aggressively</td>
+          <td>Hide them with parallelism</td>
+      </tr>
+      <tr>
+          <td>Associativity pressure</td>
+          <td>Higher</td>
+          <td>Usually lower / simpler</td>
+      </tr>
+      <tr>
+          <td>Logic budget</td>
+          <td>Expensive is acceptable</td>
+          <td>Must be replicated broadly</td>
+      </tr>
+  </tbody>
+</table>
+<p>For modern NVIDIA GPUs, official public documentation focuses much more on:</p>
+<ul>
+<li>cache capacity,</li>
+<li>unification with shared memory,</li>
+<li>coalescing behavior,</li>
+<li>and profiler-visible hit/miss behavior,</li>
+</ul>
+<p>than on publishing a stable “the L1 is exactly N-way” rule for every architecture.</p>
+<p>That is an important nuance.</p>
+<blockquote>
+<p>Exact associativity and replacement behavior are often <strong>architecture-dependent</strong> and not always fully disclosed in public vendor docs.</p>
+</blockquote>
+<p>So the safe engineering takeaway is not to memorize one universal associativity number. The real takeaway is:</p>
+<ul>
+<li>GPU SM-side caches are optimized for <strong>throughput</strong>,</li>
+<li>are usually <strong>simpler than high-end CPU caches</strong>,</li>
+<li>and still depend heavily on <strong>access regularity and locality</strong>.</li>
+</ul>
+<hr>
+<h2 id="associativity-and-performance-where-it-actually-shows-up">Associativity and Performance: Where It Actually Shows Up</h2>
+<p>Associativity matters when multiple active cache lines compete for the same set.</p>
+<p>That creates <strong>conflict misses</strong>.</p>
+<p>If your access pattern keeps mapping hot data to the same few sets, then even a cache with enough total capacity can behave badly.</p>
+<h3 id="a-simple-example">A simple example</h3>
+<p>Imagine a warp repeatedly touches addresses that are spaced in a way that aliases to the same set:</p>
+<div class="highlight"><pre tabindex="0" style="color:#abb2bf;background-color:#282c34;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-cpp" data-lang="cpp"><span style="display:flex;"><span><span style="color:#e06c75">__global__</span> <span style="color:#e5c07b">void</span> <span style="color:#61afef;font-weight:bold">stride_conflict</span>(<span style="color:#e5c07b">float</span><span style="color:#56b6c2">*</span> <span style="color:#e06c75">out</span>, <span style="color:#c678dd">const</span> <span style="color:#e5c07b">float</span><span style="color:#56b6c2">*</span> <span style="color:#e06c75">in</span>, <span style="color:#e5c07b">int</span> <span style="color:#e06c75">n</span>, <span style="color:#e5c07b">int</span> <span style="color:#e06c75">stride</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#e5c07b">int</span> <span style="color:#e06c75">tid</span> <span style="color:#56b6c2">=</span> <span style="color:#e06c75">blockIdx</span>.<span style="color:#e06c75">x</span> <span style="color:#56b6c2">*</span> <span style="color:#e06c75">blockDim</span>.<span style="color:#e06c75">x</span> <span style="color:#56b6c2">+</span> <span style="color:#e06c75">threadIdx</span>.<span style="color:#e06c75">x</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#e5c07b">float</span> <span style="color:#e06c75">acc</span> <span style="color:#56b6c2">=</span> <span style="color:#d19a66">0.0f</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#c678dd">for</span> (<span style="color:#e5c07b">int</span> <span style="color:#e06c75">i</span> <span style="color:#56b6c2">=</span> <span style="color:#e06c75">tid</span>; <span style="color:#e06c75">i</span> <span style="color:#56b6c2">&lt;</span> <span style="color:#e06c75">n</span>; <span style="color:#e06c75">i</span> <span style="color:#56b6c2">+=</span> <span style="color:#e06c75">blockDim</span>.<span style="color:#e06c75">x</span> <span style="color:#56b6c2">*</span> <span style="color:#e06c75">gridDim</span>.<span style="color:#e06c75">x</span>) {
+</span></span><span style="display:flex;"><span>        <span style="color:#e06c75">acc</span> <span style="color:#56b6c2">+=</span> <span style="color:#e06c75">in</span>[<span style="color:#e06c75">i</span> <span style="color:#56b6c2">*</span> <span style="color:#e06c75">stride</span>];
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#e06c75">out</span>[<span style="color:#e06c75">tid</span>] <span style="color:#56b6c2">=</span> <span style="color:#e06c75">acc</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>If <code>stride</code> is unfortunate, the kernel can generate:</p>
+<ul>
+<li>poor coalescing,</li>
+<li>low spatial locality,</li>
+<li>repetitive set conflicts,</li>
+<li>and more pressure on L2 and DRAM.</li>
+</ul>
+<p>In a profiler, the symptom is not “the cache is 4-way.”
+The symptom is usually one of these:</p>
+<ul>
+<li>lower L1 hit rate,</li>
+<li>more sectors per request,</li>
+<li>more traffic to L2,</li>
+<li>more long-scoreboard stalls,</li>
+<li>and less issue efficiency.</li>
+</ul>
+<p>That is why associativity is best understood as a <strong>behavioral concept</strong>, not a trivia fact.</p>
+<h3 id="what-usually-helps">What usually helps</h3>
+<p>When cache conflicts are hurting, the practical fixes are often:</p>
+<ol>
+<li><strong>Improve coalescing</strong> so a warp touches fewer cache lines.</li>
+<li><strong>Tile into shared memory</strong> so data is reused explicitly instead of repeatedly refetched.</li>
+<li><strong>Change layout or stride</strong> to avoid pathological set reuse.</li>
+<li><strong>Reduce working-set churn</strong> so hot data actually has a chance to stay on chip.</li>
+</ol>
+<hr>
+<h2 id="registers-the-fastest-memory-and-the-first-occupancy-limit">Registers: The Fastest Memory, and the First Occupancy Limit</h2>
+<p>If cache associativity explains one side of memory behavior, registers explain the other.</p>
+<p>For many CUDA kernels, the most important memory question is not:</p>
+<blockquote>
+<p>“How big is L2?”</p>
+</blockquote>
+<p>It is:</p>
+<blockquote>
+<p>“How many registers did the compiler allocate per thread?”</p>
+</blockquote>
+<p>That is because registers are both:</p>
+<ul>
+<li>the fastest storage the thread has, and</li>
+<li>a hard capacity limit on how many warps can reside on an SM.</li>
+</ul>
+<hr>
+<h2 id="cpu-registers-vs-gpu-registers">CPU Registers vs GPU Registers</h2>
+<p>On CPUs, the register story is dynamic.
+On GPUs, it is mostly fixed at compile time.</p>
+<h3 id="cpu-baseline">CPU baseline</h3>
+<p>Conceptually, a CPU can rename architectural registers onto a larger pool of physical registers.</p>
+<div class="highlight"><pre tabindex="0" style="color:#abb2bf;background-color:#282c34;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nasm" data-lang="nasm"><span style="display:flex;"><span><span style="color:#61afef;font-weight:bold">ADD</span> <span style="color:#e06c75">R1</span>, <span style="color:#e06c75">R2</span>, <span style="color:#e06c75">R3</span>
+</span></span><span style="display:flex;"><span><span style="color:#61afef;font-weight:bold">SUB</span> <span style="color:#e06c75">R1</span>, <span style="color:#e06c75">R4</span>, <span style="color:#e06c75">R5</span>
+</span></span></code></pre></div><p>Architecturally, both instructions write <code>R1</code>.
+Internally, an out-of-order CPU can map them to different physical destinations and keep moving.</p>
+<p>That flexibility is one of the reasons CPU register usage feels forgiving.</p>
+<h3 id="gpu-model">GPU model</h3>
+<p>CUDA works differently.</p>
+<ul>
+<li>PTX exposes <strong>virtual registers</strong>.</li>
+<li><code>ptxas</code> maps them to <strong>real hardware registers</strong>.</li>
+<li>That final count becomes part of launch resource usage.</li>
+</ul>
+<p>If a kernel uses 96 registers per thread, the SM must reserve that budget for every resident thread of the kernel.</p>
+<p>There is no CPU-style dynamic rescue path that suddenly finds more hidden registers at runtime.</p>
+<hr>
+<h2 id="what-the-register-file-looks-like-at-a-high-level">What the Register File Looks Like at a High Level</h2>
+<p>On recent NVIDIA architectures such as Volta, Ampere, and Hopper, public tuning guides document:</p>
+<ul>
+<li><strong>64K 32-bit registers per SM</strong>, and</li>
+<li><strong>up to 255 registers per thread</strong>.</li>
+</ul>
+<p>Nsight Compute&rsquo;s hardware model also describes the SM as being split into <strong>SM sub-partitions (SMSPs)</strong>. Each SMSP contains its own:</p>
+<ul>
+<li>warp scheduler,</li>
+<li>register file,</li>
+<li>and execution pipelines.</li>
+</ul>
+<p>Shared across the SM are larger structures like the unified shared-memory / L1 path.</p>
+<p>This is the throughput view of the machine: each sub-partition is trying to keep a pool of resident warps fed with operands and ready to issue.</p>
+<h4 id="placeholder-insert-smsmsp-register-diagram">[PLACEHOLDER: Insert SM/SMSP register diagram]</h4>
+<p>Show one SM divided into four SMSPs. In each SMSP, label <code>Warp Scheduler</code>, <code>Register File</code>, and <code>Execution Units</code>. Above the four SMSPs, show a shared <code>L1 / Shared Memory / Texture</code> block.</p>
+<hr>
+<h2 id="ptx-registers-vs-sass-registers">PTX Registers vs SASS Registers</h2>
+<p>One source of confusion is that PTX register names are not the final hardware story.</p>
+<h3 id="ptx-view">PTX view</h3>
+<pre tabindex="0"><code class="language-ptx" data-lang="ptx">ld.global.f32  %f1, [%rd1];
+ld.global.f32  %f2, [%rd2];
+add.f32        %f3, %f1, %f2;
+st.global.f32  [%rd3], %f3;
+</code></pre><p>These are virtual registers.
+PTX is still an intermediate ISA.</p>
+<h3 id="sass-view">SASS view</h3>
+<p>Representative final machine code will look more like:</p>
+<div class="highlight"><pre tabindex="0" style="color:#abb2bf;background-color:#282c34;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-nasm" data-lang="nasm"><span style="display:flex;"><span><span style="color:#61afef;font-weight:bold">LDG.E</span> <span style="color:#e06c75">R2</span>, [<span style="color:#e06c75">R4</span>]
+</span></span><span style="display:flex;"><span><span style="color:#61afef;font-weight:bold">LDG.E</span> <span style="color:#e06c75">R3</span>, [<span style="color:#e06c75">R6</span>]
+</span></span><span style="display:flex;"><span><span style="color:#61afef;font-weight:bold">FADD</span> <span style="color:#e06c75">R2</span>, <span style="color:#e06c75">R2</span>, <span style="color:#e06c75">R3</span>
+</span></span><span style="display:flex;"><span><span style="color:#61afef;font-weight:bold">STG.E</span> [<span style="color:#e06c75">R8</span>], <span style="color:#e06c75">R2</span>
+</span></span></code></pre></div><p>These <code>R</code> registers are hardware registers from the point of view of the issued machine code.</p>
+<p>That mapping matters because <strong>register count is what occupancy calculations use</strong>, not how pretty the PTX looked.</p>
+<hr>
+<h2 id="why-registers-affect-performance-so-strongly">Why Registers Affect Performance So Strongly</h2>
+<p>Registers affect performance through three linked mechanisms:</p>
+<ol>
+<li><strong>occupancy</strong>,</li>
+<li><strong>spilling</strong>, and</li>
+<li><strong>scheduler freedom</strong>.</li>
+</ol>
+<h3 id="1-register-count-limits-occupancy">1. Register count limits occupancy</h3>
+<p>If an SM has $65536$ 32-bit registers and a kernel uses $R$ registers per thread, then the register-limited maximum warps per SM is approximately:</p>
+<p>$$
+ext{max warps from registers} = \left\lfloor \frac{65536}{32 \times R} \right\rfloor
+$$</p>
+<p>For example:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Registers per thread</th>
+          <th>Theoretical warps from register limit</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>32</td>
+          <td>64</td>
+      </tr>
+      <tr>
+          <td>64</td>
+          <td>32</td>
+      </tr>
+      <tr>
+          <td>96</td>
+          <td>21</td>
+      </tr>
+      <tr>
+          <td>128</td>
+          <td>16</td>
+      </tr>
+      <tr>
+          <td>255</td>
+          <td>8</td>
+      </tr>
+  </tbody>
+</table>
+<p>Real occupancy can be lower because block size, shared memory, and per-SM block limits also matter. But the trend is the point:</p>
+<blockquote>
+<p>More registers per thread means fewer resident warps.</p>
+</blockquote>
+<p>And fewer resident warps means fewer opportunities to hide memory latency.</p>
+<h3 id="2-too-few-registers-causes-spilling">2. Too few registers causes spilling</h3>
+<p>If the compiler cannot keep thread-private values in registers, some values are spilled into <strong>local memory</strong>.</p>
+<p>That is dangerous because local memory:</p>
+<ul>
+<li>is thread-private in address space,</li>
+<li>but lives in device memory,</li>
+<li>and has similar performance characteristics to global memory.</li>
+</ul>
+<p>So spilling often creates exactly the thing you were hoping to avoid: more off-chip traffic and more scoreboard waiting.</p>
+<h3 id="3-register-pressure-changes-code-generation">3. Register pressure changes code generation</h3>
+<p>Heavy register pressure can also lead to:</p>
+<ul>
+<li>more move instructions,</li>
+<li>shorter live ranges forced by the compiler,</li>
+<li>less aggressive unrolling,</li>
+<li>and less instruction-level flexibility.</li>
+</ul>
+<p>So register pressure is not just a capacity issue. It changes the shape of the generated kernel.</p>
+<hr>
+<h2 id="a-small-but-important-nuance-higher-occupancy-is-not-the-final-goal">A Small but Important Nuance: Higher Occupancy Is Not the Final Goal</h2>
+<p>A common beginner mistake is:</p>
+<blockquote>
+<p>“If fewer registers increase occupancy, then fewer registers must always be better.”</p>
+</blockquote>
+<p>That is not true.</p>
+<p>If you force register count too low, the compiler may spill, and the kernel can get slower even if occupancy rises.</p>
+<p>The real target is:</p>
+<blockquote>
+<p>enough active warps to hide latency <strong>without</strong> paying too much spill or recomputation cost.</p>
+</blockquote>
+<p>That is why tuning register usage is usually a balancing act, not a single-direction rule.</p>
+<hr>
+<h2 id="what-about-register-banks-and-operand-collectors">What About Register Banks and Operand Collectors?</h2>
+<p>There is another layer below the simple “more registers good / too many registers bad” story.</p>
+<p>Inside the SM sub-partition, the register path is not magic. It has bandwidth limits.</p>
+<p>At a high level, modern NVIDIA GPUs use:</p>
+<ul>
+<li>a <strong>register file</strong> per SMSP,</li>
+<li>banked internally,</li>
+<li>plus buffering / collection logic between the register file and the execution units.</li>
+</ul>
+<p>This is often discussed under the umbrella of the <strong>operand collector</strong> in reverse-engineering and microarchitecture papers.</p>
+<p>Why it matters:</p>
+<ul>
+<li>execution units want operands every cycle,</li>
+<li>the register file has limited per-cycle read bandwidth,</li>
+<li>and the machine needs buffering and arbitration to keep the pipelines busy.</li>
+</ul>
+<p>For most CUDA developers, though, this is a second-order concern.</p>
+<p>The first-order concerns are still:</p>
+<ol>
+<li>register count per thread,</li>
+<li>spills to local memory,</li>
+<li>dependency chains,</li>
+<li>and enough active warps to cover memory latency.</li>
+</ol>
+<p>Unless you are doing very low-level SASS analysis, those dominate much more often than hand-reasoning about register banks.</p>
+<hr>
+<h2 id="how-cache-associativity-and-registers-meet-in-real-kernels">How Cache Associativity and Registers Meet in Real Kernels</h2>
+<p>These topics are usually taught separately, but they collide in practice.</p>
+<p>Consider a kernel with:</p>
+<ul>
+<li>poor global-memory locality,</li>
+<li>many long-latency loads,</li>
+<li>and high register usage per thread.</li>
+</ul>
+<p>What happens?</p>
+<ol>
+<li>The SM-side cache is less effective.</li>
+<li>More requests fall through to L2 or DRAM.</li>
+<li>Each warp waits longer on memory.</li>
+<li>But because register pressure reduced occupancy, there are fewer other warps available to run.</li>
+</ol>
+<p>That is the nightmare combination:</p>
+<blockquote>
+<p><strong>bad cache behavior + low occupancy</strong></p>
+</blockquote>
+<p>This is why memory optimization on GPUs is rarely about a single structure in isolation. It is about the interaction between:</p>
+<ul>
+<li>access pattern,</li>
+<li>cache behavior,</li>
+<li>register allocation,</li>
+<li>and scheduler-visible latency hiding.</li>
+</ul>
+<hr>
+<h2 id="what-to-look-for-in-profiling">What to Look for in Profiling</h2>
+<p>If this article is the conceptual map, the profiler is where you verify the story.</p>
+<h2 id="nsight-compute">Nsight Compute</h2>
+<p>Use Nsight Compute for the kernel-level answer.</p>
+<p>Focus on these sections first:</p>
+<ol>
+<li>
+<p><strong>Launch Statistics / Occupancy</strong></p>
+<ul>
+<li><code>launch__registers_per_thread</code></li>
+<li><code>launch__occupancy_limit_registers</code></li>
+<li>theoretical vs achieved occupancy</li>
+<li>whether registers, shared memory, warps, or blocks are the limiting resource</li>
+</ul>
+</li>
+<li>
+<p><strong>Scheduler Statistics</strong></p>
+<ul>
+<li>active warps vs eligible warps vs issued warps</li>
+<li>many skipped issue slots usually mean poor latency hiding</li>
+</ul>
+</li>
+<li>
+<p><strong>Warp Stall Reasons / Source Counters</strong></p>
+<ul>
+<li>high <code>long_scoreboard</code> often points to waiting on local/global/L1TEX data</li>
+<li>high <code>lg_throttle</code> can indicate heavy local/global memory pressure</li>
+<li>high <code>short_scoreboard</code> can be shared-memory or MIO related</li>
+</ul>
+</li>
+<li>
+<p><strong>Memory Workload Analysis</strong></p>
+<ul>
+<li>L1/TEX hit rate</li>
+<li>sectors per request</li>
+<li>traffic to L2 and DRAM</li>
+<li>whether accesses look coalesced or scattered</li>
+</ul>
+</li>
+<li>
+<p><strong>Instruction Statistics / SASS correlation</strong></p>
+<ul>
+<li>count of local loads and stores</li>
+<li>register-spilling instructions</li>
+<li>hot instructions causing memory or dependency pressure</li>
+</ul>
+</li>
+</ol>
+<p>Helpful interpretation patterns:</p>
+<ul>
+<li><strong>Low occupancy + high long-scoreboard</strong> often means register pressure is making cache misses more visible.</li>
+<li><strong>High local-memory traffic</strong> often means spill pressure.</li>
+<li><strong>High sectors/request</strong> often means poor coalescing, which amplifies pressure on L1, L2, and DRAM.</li>
+</ul>
+<h2 id="nsight-systems">Nsight Systems</h2>
+<p>Use Nsight Systems for the timeline-level answer.</p>
+<p>Look for:</p>
+<ul>
+<li>whether the kernel is actually the application bottleneck,</li>
+<li>launch gaps between kernels,</li>
+<li>overlap or lack of overlap between copies and kernels,</li>
+<li>whether the GPU is underfed by the CPU,</li>
+<li>and whether memory migrations or API synchronization dominate the real runtime.</li>
+</ul>
+<p>If Nsight Compute says a kernel has cache or register problems, Nsight Systems tells you whether that kernel matters enough to justify deep work.</p>
+<h2 id="visual-profiler--nvvp-legacy">Visual Profiler / <code>nvvp</code> (legacy)</h2>
+<p>For older environments, Visual Profiler can still help as a coarse first pass.</p>
+<p>Use it to check:</p>
+<ul>
+<li>occupancy trends,</li>
+<li>memory throughput trends,</li>
+<li>and broad stall patterns.</li>
+</ul>
+<p>Then confirm the diagnosis with Nsight tools when possible, because the newer tools expose much better source correlation and memory details.</p>
+<h4 id="placeholder-insert-nsight-compute-screenshot">[PLACEHOLDER: Insert Nsight Compute screenshot]</h4>
+<p>Use a screenshot showing <code>Launch Statistics</code>, <code>Occupancy</code>, <code>Scheduler Statistics</code>, and <code>Memory Workload Analysis</code> for a kernel with visible register pressure or memory stalls.</p>
+<h4 id="placeholder-insert-nsight-systems-timeline-screenshot">[PLACEHOLDER: Insert Nsight Systems timeline screenshot]</h4>
+<p>Show a timeline with CPU launch activity, CUDA stream activity, and one highlighted slow kernel. Annotate whether the kernel is truly dominant or only one part of a larger pipeline issue.</p>
+<hr>
+<h2 id="practical-rules-of-thumb">Practical Rules of Thumb</h2>
+<p>If you want only the working intuition from this article, keep these rules:</p>
+<ol>
+<li><strong>Think in SMs, not just in “the GPU.”</strong></li>
+<li><strong>Registers are the first memory level to care about for occupancy.</strong></li>
+<li><strong>Local memory usually means trouble, because it often means spills.</strong></li>
+<li><strong>Cache associativity matters when your access pattern creates conflicts, not because you memorized one hardware number.</strong></li>
+<li><strong>GPU caches are throughput helpers, not magical latency erasers.</strong></li>
+<li><strong>The goal is balanced latency hiding, not maximum occupancy at any cost.</strong></li>
+</ol>
+<hr>
+<h2 id="closing">Closing</h2>
+<p>Part 1 is about building the mental model:</p>
+<ul>
+<li>the SM is the center of CUDA performance,</li>
+<li>cache behavior depends on access regularity and conflict pressure,</li>
+<li>and registers are both your fastest storage and one of your most important limits.</li>
+</ul>
+<p>In the next parts, we can go deeper into the rest of the hierarchy — especially the unified L1/shared path, L2 behavior, and how different memory spaces show up in PTX, SASS, and profilers.</p>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/"
+
+
+
+
+ target="_blank"
+ 
+
+
+>CUDA C++ Programming Guide</a></li>
+<li><a href="https://docs.nvidia.com/cuda/volta-tuning-guide/"
+
+
+
+
+ target="_blank"
+ 
+
+
+>Volta Tuning Guide</a></li>
+<li><a href="https://docs.nvidia.com/cuda/ampere-tuning-guide/"
+
+
+
+
+ target="_blank"
+ 
+
+
+>Ampere Tuning Guide</a></li>
+<li><a href="https://docs.nvidia.com/cuda/hopper-tuning-guide/"
+
+
+
+
+ target="_blank"
+ 
+
+
+>Hopper Tuning Guide</a></li>
+<li><a href="https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html"
+
+
+
+
+ target="_blank"
+ 
+
+
+>Nsight Compute Profiling Guide</a></li>
+<li><a href="https://docs.nvidia.com/nsight-systems/UserGuide/index.html"
+
+
+
+
+ target="_blank"
+ 
+
+
+>Nsight Systems User Guide</a></li>
+<li><a href="https://arxiv.org/abs/1804.06826"
+
+
+
+
+ target="_blank"
+ 
+
+
+>Dissecting the NVIDIA Volta GPU Architecture via Microbenchmarking</a></li>
+<li><a href="https://arxiv.org/abs/1903.07486"
+
+
+
+
+ target="_blank"
+ 
+
+
+>Dissecting the NVidia Turing T4 GPU via Microbenchmarking</a></li>
+<li><a href="https://arxiv.org/abs/2208.11174"
+
+
+
+
+ target="_blank"
+ 
+
+
+>Demystifying the Nvidia Ampere Architecture through Microbenchmarking and Instruction-level Analysis</a></li>
+</ul>
+
+          </div>
+          <div class="row items-start justify-between">
+            
+            
+              <div class="lg:col-5 mb-10 flex items-center lg:mb-0">
+                <h5 class="mr-3">Tags :</h5>
+                <ul>
+                  
+                    <li class="inline-block">
+                      <a
+                        class="bg-theme-light hover:bg-primary dark:bg-darkmode-theme-light dark:hover:bg-darkmode-primary dark:hover:text-dark m-1 block rounded px-3 py-1 hover:text-white"
+                        href="/tags/cuda/">
+                        Cuda
+                      </a>
+                    </li>
+                  
+                    <li class="inline-block">
+                      <a
+                        class="bg-theme-light hover:bg-primary dark:bg-darkmode-theme-light dark:hover:bg-darkmode-primary dark:hover:text-dark m-1 block rounded px-3 py-1 hover:text-white"
+                        href="/tags/gpu-architecture/">
+                        Gpu architecture
+                      </a>
+                    </li>
+                  
+                    <li class="inline-block">
+                      <a
+                        class="bg-theme-light hover:bg-primary dark:bg-darkmode-theme-light dark:hover:bg-darkmode-primary dark:hover:text-dark m-1 block rounded px-3 py-1 hover:text-white"
+                        href="/tags/memory-hierarchy/">
+                        Memory hierarchy
+                      </a>
+                    </li>
+                  
+                    <li class="inline-block">
+                      <a
+                        class="bg-theme-light hover:bg-primary dark:bg-darkmode-theme-light dark:hover:bg-darkmode-primary dark:hover:text-dark m-1 block rounded px-3 py-1 hover:text-white"
+                        href="/tags/registers/">
+                        Registers
+                      </a>
+                    </li>
+                  
+                    <li class="inline-block">
+                      <a
+                        class="bg-theme-light hover:bg-primary dark:bg-darkmode-theme-light dark:hover:bg-darkmode-primary dark:hover:text-dark m-1 block rounded px-3 py-1 hover:text-white"
+                        href="/tags/optimization/">
+                        Optimization
+                      </a>
+                    </li>
+                  
+                </ul>
+              </div>
+            
+            <div class="lg:col-4 flex items-center">
+              
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="share-icons">
+  
+  
+    <a
+      class="share-link share-facebook"
+      href="https://facebook.com/sharer/sharer.php?u=%2f%2flocalhost%3a1313%2fblog%2fcuda%2fmicroarchitecture%2fmemory%2f1-cache-register%2f"
+      target="_blank"
+      rel="noopener"
+      aria-label="share facebook">
+      <span class="share-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path
+            d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z" />
+        </svg>
+      </span>
+    </a>
+  
+
+
+  
+  
+    <a
+      class="share-link share-x"
+      href="https://x.com/intent/tweet/?text=Share&amp;url=%2f%2flocalhost%3a1313%2fblog%2fcuda%2fmicroarchitecture%2fmemory%2f1-cache-register%2f"
+      target="_blank"
+      rel="noopener"
+      aria-label="share x">
+      <span aria-hidden="true" class="share-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path
+            d="M8 2H1l8.26 11.015L1.45 22H4.1l6.388-7.349L16 22h7l-8.608-11.478L21.8 2h-2.65l-5.986 6.886zm9 18L5 4h2l12 16z" />
+        </svg>
+      </span>
+    </a>
+  
+
+
+  
+  
+    <a
+      class="share-link share-email"
+      href="mailto:?subject=Share&amp;body=%2f%2flocalhost%3a1313%2fblog%2fcuda%2fmicroarchitecture%2fmemory%2f1-cache-register%2f"
+      target="_self"
+      rel="noopener"
+      aria-label="share email">
+      <span aria-hidden="true" class="share-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path
+            d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z" />
+        </svg>
+      </span>
+    </a>
+  
+
+
+  
+  
+    <a
+      class="share-link share-reddit"
+      href="https://reddit.com/submit/?url=%2f%2flocalhost%3a1313%2fblog%2fcuda%2fmicroarchitecture%2fmemory%2f1-cache-register%2f&amp;resubmit=true&amp;title=Share"
+      target="_blank"
+      rel="noopener"
+      aria-label="share reddit">
+      <span aria-hidden="true" class="share-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path
+            d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.75-1.64-6.07-1.72.08-1.1.4-3.05 1.52-3.7.72-.4 1.73-.24 3 .5C17.2 6.3 18.46 7.5 20 7.5c1.65 0 3-1.35 3-3s-1.35-3-3-3c-1.38 0-2.54.94-2.88 2.22-1.43-.72-2.64-.8-3.6-.25-1.64.94-1.95 3.47-2 4.55-2.33.08-4.45.7-6.1 1.72C4.86 8.98 3.96 8.5 3 8.5c-1.65 0-3 1.35-3 3 0 1.32.84 2.44 2.05 2.84-.03.22-.05.44-.05.66 0 3.86 4.5 7 10 7s10-3.14 10-7c0-.22-.02-.44-.05-.66 1.2-.4 2.05-1.54 2.05-2.84zM2.3 13.37C1.5 13.07 1 12.35 1 11.5c0-1.1.9-2 2-2 .64 0 1.22.32 1.6.82-1.1.85-1.92 1.9-2.3 3.05zm3.7.13c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9.8 4.8c-1.08.63-2.42.96-3.8.96-1.4 0-2.74-.34-3.8-.95-.24-.13-.32-.44-.2-.68.15-.24.46-.32.7-.18 1.83 1.06 4.76 1.06 6.6 0 .23-.13.53-.05.67.2.14.23.06.54-.18.67zm.2-2.8c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm5.7-2.13c-.38-1.16-1.2-2.2-2.3-3.05.38-.5.97-.82 1.6-.82 1.1 0 2 .9 2 2 0 .84-.53 1.57-1.3 1.87z" />
+        </svg>
+      </span>
+    </a>
+  
+
+
+  
+  
+
+
+  
+  
+
+
+  
+  
+
+
+  
+  
+
+
+  
+  
+
+
+  
+  
+
+
+  
+  
+    <span class="fediverse-share">
+      <a
+        class="share-link share-fediverse"
+        href="javascript:void(0);"
+        onclick="toggleFediverseInput(this)"
+        aria-label="share fediverse">
+        <span aria-hidden="true" class="share-icon">
+          <svg
+            viewBox="-10 -5 1034 1034"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            version="1.1">
+            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+            <g
+              id="SVGRepo_tracerCarrier"
+              stroke-linecap="round"
+              stroke-linejoin="round"></g>
+            <g id="SVGRepo_iconCarrier">
+              <path
+                d="M539 176q-32 0 -55 22t-25 55t20.5 58t56 27t58.5 -20.5t27 -56t-20.5 -59t-56.5 -26.5h-5zM452 271l-232 118q20 20 25 48l231 -118q-19 -20 -24 -48zM619 298q-13 25 -38 38l183 184q13 -25 39 -38zM477 320l-135 265l40 40l143 -280q-28 -5 -48 -25zM581 336 q-22 11 -46 10l-8 -1l21 132l56 9zM155 370q-32 0 -55 22.5t-25 55t20.5 58t56.5 27t59 -21t26.5 -56t-21 -58.5t-55.5 -27h-6zM245 438q1 9 1 18q-1 19 -10 35l132 21l26 -50zM470 474l-26 51l311 49q-1 -8 -1 -17q1 -19 10 -36zM842 480q-32 1 -55 23t-24.5 55t21 58 t56 27t58.5 -20.5t27 -56.5t-20.5 -59t-56.5 -27h-6zM236 493q-13 25 -39 38l210 210l51 -25zM196 531q-21 11 -44 10l-9 -1l40 256q21 -10 45 -9l8 1zM560 553l48 311q21 -10 44 -9l10 1l-46 -294zM755 576l-118 60l8 56l135 -68q-20 -20 -25 -48zM781 625l-119 231 q28 5 48 25l119 -231q-28 -5 -48 -25zM306 654l-68 134q28 5 48 25l60 -119zM568 671l-281 143q19 20 24 48l265 -135zM513 771l-51 25l106 107q13 -25 39 -38zM222 795q-32 0 -55.5 22.5t-25 55t21 57.5t56 27t58.5 -20.5t27 -56t-20.5 -58.5t-56.5 -27h-5zM311 863 q2 9 1 18q-1 19 -9 35l256 41q-1 -9 -1 -18q1 -18 10 -35zM646 863q-32 0 -55 22.5t-24.5 55t20.5 58t56 27t59 -21t27 -56t-20.5 -58.5t-56.5 -27h-6z"></path>
+            </g>
+          </svg>
+        </span>
+      </a>
+      <span class="fediverse-input-wrapper" style="display: none;">
+        <input
+          type="text"
+          placeholder="Enter Fediverse Instance URL"
+          class="fediverse-input"
+          onkeypress="handleFediverseShare(event, '\/\/localhost:1313\/blog\/cuda\/microarchitecture\/memory\/1-cache-register\/', 'Share')" />
+        <button
+          class="fediverse-check-button"
+          onclick="handleFediverseShareButton(this, '\/\/localhost:1313\/blog\/cuda\/microarchitecture\/memory\/1-cache-register\/', 'Share')">
+          Share
+        </button>
+      </span>
+    </span>
+  
+
+
+  
+  
+    <button
+      class="share-link share-copy"
+      onclick="copyToClipboard(this, '\/\/localhost:1313\/blog\/cuda\/microarchitecture\/memory\/1-cache-register\/')">
+      <span class="share-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path
+            d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7-1c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 17H5V5h14v14z" />
+        </svg>
+      </span>
+    </button>
+  
+
+</div>
+
+<script>
+  
+  function toggleFediverseInput(element) {
+    const container = element.closest(".fediverse-share");
+    const inputContainer = container.querySelector(".fediverse-input-wrapper");
+    inputContainer.style.display =
+      inputContainer.style.display === "none" ? "block" : "none";
+  }
+
+  
+  function handleFediverseShare(event, url, title) {
+    if (event.key === "Enter") {
+      const input = event.target;
+      let instanceUrl = input.value.trim();
+      if (instanceUrl) {
+        if (!instanceUrl.startsWith("https://")) {
+          instanceUrl = `https://${instanceUrl}`;
+        }
+        const shareUrl = `${instanceUrl}/share?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`;
+        window.open(shareUrl, "_blank", "noopener");
+      }
+    }
+  }
+
+  
+  function handleFediverseShareButton(button, url, title) {
+    const input = button.previousElementSibling;
+    let instanceUrl = input.value.trim();
+    if (instanceUrl) {
+      if (!instanceUrl.startsWith("https://")) {
+        instanceUrl = `https://${instanceUrl}`;
+      }
+      const shareUrl = `${instanceUrl}/share?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`;
+      window.open(shareUrl, "_blank", "noopener");
+    }
+  }
+
+  
+  function copyToClipboard(button, text) {
+    navigator.clipboard.writeText(text).then(() => {
+      const icon = button.querySelector("svg path");
+      const originalIconPath =
+        "M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7-1c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 17H5V5h14v14z";
+      const checkIconPath =
+        "M9 16.2l-3.5-3.5-1.4 1.4L9 19 20 8l-1.4-1.4L9 16.2z";
+
+      
+      icon.setAttribute("d", checkIconPath);
+
+      
+      setTimeout(() => {
+        icon.setAttribute("d", originalIconPath);
+      }, 1000);
+    });
+  }
+</script>
+
+            </div>
+          </div>
+          
+          
+        </article>
+      </div>
+
+      
+      
+      
+      
+        <div class="section pb-0">
+          <h2 class="h3 mb-12">Related Posts</h2>
+          <div class="row">
+            
+              <div class="lg:col-4 md:col-6 mb-14">
+                <div class="bg-body dark:bg-darkmode-body">
+  
+  
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+
+
+  
+
+
+  
+  <h4 class="mb-3">
+    <a href="/blog/cuda/microarchitecture/register-mapping/">
+      GPU Register Mapping: From PTX to SASS
+    </a>
+  </h4>
+  
+  
+    <ul class="mb-4">
+      <li class="mr-4 inline-block">
+        <i class="fa-regular fa-folder mr-1"></i>
+        
+          <a
+            href="/categories/cuda/"
+            class="ms-1"
+            >Cuda
+              ,
+            
+          </a>
+        
+          <a
+            href="/categories/microarchitecture/"
+            class="ms-1"
+            >Microarchitecture
+          </a>
+        
+      </li>
+    </ul>
+  
+  <p class="mb-6">Introduction Register allocation is one of the most critical—yet least understood—aspects of GPU programming. On CPUs, the hardware&rsquo;s &ldquo;out-of-order&rdquo; execution engine hides inefficiencies through register renaming, dynamically managing hundreds of physical registers behind 16 visible ones. GPUs work differently: what the compiler assigns is what actually runs, with no dynamic safety net.
+</p>
+  <a class="btn btn-outline-primary btn-sm" href="/blog/cuda/microarchitecture/register-mapping/">
+    Read More
+  </a>
+</div>
+
+              </div>
+            
+              <div class="lg:col-4 md:col-6 mb-14">
+                <div class="bg-body dark:bg-darkmode-body">
+  
+  
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+  
+
+  
+  
+    
+      
+    
+
+
+    
+    
+
+
+    
+    
+      
+      
+    
+    
+    
+
+
+    
+    
+      
+      
+        
+
+        
+        
+        
+        
+        
+        
+        
+
+
+        
+        
+
+
+        <picture>
+          <source
+            
+              srcset="/blog/cuda/streams/vec_add_hu_f45528ca64f5a597.webp"
+            
+            media="(max-width: 575px)" />
+          <source
+            
+              srcset="/blog/cuda/streams/vec_add_hu_9abbef3dd8e4941.webp"
+            
+            media="(max-width: 767px)" />
+          <source
+            
+              srcset="/blog/cuda/streams/vec_add_hu_ef17b45787b461ff.webp"
+            
+            media="(max-width: 991px)" />
+          <source
+            
+              srcset="/blog/cuda/streams/vec_add_hu_f0ce7db719aad989.webp"
+             />
+          <img
+            
+              loading="lazy" decoding="async"
+              src="/blog/cuda/streams/vec_add_hu_90a9b2c98212ca27.png"
+            
+            
+            class=" mb-6 w-full rounded img"
+            alt="Memory Latency Hiding in CUDA using Streams"
+            width="1912"
+            height="915" />
+        </picture>
+      
+      
+    
+    
+  
+
+
+  
+
+
+  
+  <h4 class="mb-3">
+    <a href="/blog/cuda/streams/">
+      Memory Latency Hiding in CUDA using Streams
+    </a>
+  </h4>
+  
+  
+    <ul class="mb-4">
+      <li class="mr-4 inline-block">
+        <i class="fa-regular fa-folder mr-1"></i>
+        
+          <a
+            href="/categories/cuda-adventures/"
+            class="ms-1"
+            >Cuda adventures
+          </a>
+        
+      </li>
+    </ul>
+  
+  <p class="mb-6">I’m starting a new CUDA project to deepen my understanding of GPU acceleration. I’ll begin with simple tasks like vector addition and move on to more involved projects, including image processing and language model optimizations. While this series won’t be a step-by-step tutorial, I’ll share the interesting parts of my implementations, highlighting the challenges I faced and the reasoning behind my decisions. For the complete code, feel free to check out the project repository.
+</p>
+  <a class="btn btn-outline-primary btn-sm" href="/blog/cuda/streams/">
+    Read More
+  </a>
+</div>
+
+              </div>
+            
+              <div class="lg:col-4 md:col-6 mb-14">
+                <div class="bg-body dark:bg-darkmode-body">
+  
+  
+  <h4 class="mb-3">
+    <a href="/blog/cuda/microarchitecture/instruction-encoding/">
+      GPU Instruction Encoding: Why SASS Carries Scheduling Metadata
+    </a>
+  </h4>
+  
+  
+    <ul class="mb-4">
+      <li class="mr-4 inline-block">
+        <i class="fa-regular fa-folder mr-1"></i>
+        
+          <a
+            href="/categories/cuda/"
+            class="ms-1"
+            >Cuda
+              ,
+            
+          </a>
+        
+          <a
+            href="/categories/microarchitecture/"
+            class="ms-1"
+            >Microarchitecture
+          </a>
+        
+      </li>
+    </ul>
+  
+  <p class="mb-6">TL;DR CPU out-of-order cores solve dependencies dynamically in hardware every cycle. NVIDIA GPUs push much of per-instruction dependency timing into compiler-generated metadata. In disassembly tools, this often appears as control information like wait masks, barrier indices, stall counts, yield hints, and reuse flags. The exact bit layout is architecture-dependent, but the mental model is stable: compiler pre-annotates hazards, warp scheduler executes cheaply. Why This Topic Matters When a kernel underperforms, we usually look at occupancy, memory coalescing, or instruction mix. But one layer lower, instruction encoding itself influences how efficiently the SM can issue instructions from each warp.
+</p>
+  <a class="btn btn-outline-primary btn-sm" href="/blog/cuda/microarchitecture/instruction-encoding/">
+    Read More
+  </a>
+</div>
+
+              </div>
+            
+          </div>
+        </div>
+      
+    </div>
+  </section>
+
+    </main>
+
+    
+    <footer class="bg-theme-light dark:bg-darkmode-body">
+  <div class="container">
+    <div class="row items-center py-10">
+      <div class="lg:col-3 mb-8 text-center lg:mb-0 lg:text-left">
+        
+        <a
+          class="navbar-brand inline-block"
+          href="/">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+  
+  
+  
+
+
+  
+  
+    
+    
+  
+
+
+  
+  
+      
+      
+    
+    
+    
+    
+    
+    
+  
+  
+
+  
+  
+    
+    
+      
+      
+
+
+      
+      
+        
+        
+        
+        
+
+        
+        
+        
+      
+      
+    
+  
+  
+
+  
+    <img
+      fetchpriority="high"
+      decoding="async"
+      class="img img-light"
+      width="70"
+      height="32"
+      src="/images/logo_hu_17cd06bba4982a16.webp"
+      alt="Viswa Ravichandran Blog"
+      onerror="this.onerror=null;this.src='\/images\/logo_hu_84f2dc06b2966914.png';" />
+
+    <img
+      fetchpriority="high"
+      decoding="async"
+      class="img img-dark"
+      width="70"
+      height="32"
+      src="/images/logo-darkmode_hu_17cd06bba4982a16.webp"
+      alt="Viswa Ravichandran Blog"
+      onerror="this.onerror=null;this.src='\/images\/logo-darkmode_hu_84f2dc06b2966914.png';" />
+  
+  
+
+
+        </a>
+      </div>
+
+      
+      <div class="lg:col-6 mb-8 text-center lg:mb-0">
+        <ul>
+          
+            <li class="m-3 inline-block">
+              <a
+                
+                href="
+                  /
+                "
+                >About</a
+              >
+            </li>
+          
+            <li class="m-3 inline-block">
+              <a
+                
+                href="
+                  /blog
+                "
+                >Blog</a
+              >
+            </li>
+          
+            <li class="m-3 inline-block">
+              <a
+                
+                href="
+                  /contact
+                "
+                >Contact</a
+              >
+            </li>
+          
+        </ul>
+      </div>
+
+      
+      <div class="lg:col-3 mb-8 text-center lg:mb-0 lg:mt-0 lg:text-right">
+        <ul class="social-icons">
+          
+            <li>
+              <a
+                target="_blank"
+                aria-label="twitter"
+                rel="nofollow noopener"
+                href="https://x.com/viswa_ravi_">
+                <i class="fab fa-twitter"></i>
+              </a>
+            </li>
+          
+            <li>
+              <a
+                target="_blank"
+                aria-label="github"
+                rel="nofollow noopener"
+                href="https://github.com/viswaravi">
+                <i class="fab fa-github"></i>
+              </a>
+            </li>
+          
+            <li>
+              <a
+                target="_blank"
+                aria-label="linkedin"
+                rel="nofollow noopener"
+                href="https://www.linkedin.com/in/viswa-ravichandran-1471b5126/">
+                <i class="fab fa-linkedin"></i>
+              </a>
+            </li>
+          
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="border-border dark:border-darkmode-border border-t py-7">
+    <div class="text-light dark:text-darkmode-light container text-center">
+      <p>
+        &copy;
+        Viswa Ravichandran
+      </p>
+    </div>
+  </div>
+</footer>
+
+
+
+    
+    
+
+
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+  
+    
+      
+    
+  
+
+
+
+
+
+
+
+
+
+
+
+
+<script
+  crossorigin="anonymous"
+  integrity=""
+  src="/js/script.js"></script>
+
+
+<script
+  defer
+  async
+  crossorigin="anonymous"
+  integrity=""
+  src="/js/script-lazy.js"></script>
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  </body>
+</html>

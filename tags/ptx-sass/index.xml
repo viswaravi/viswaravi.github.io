@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>PTX-SASS on Pixel Bytes</title>
+    <link>//localhost:1313/tags/ptx-sass/</link>
+    <description>Recent content in PTX-SASS on Pixel Bytes</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 15 May 2026 00:00:00 +0000</lastBuildDate>
+    <atom:link href="//localhost:1313/tags/ptx-sass/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>CUDA Instruction Encoding: Why SASS Carries Scheduling Metadata</title>
+      <link>//localhost:1313/blog/cuda/microarchitecture/instruction-encoding/</link>
+      <pubDate>Fri, 15 May 2026 00:00:00 +0000</pubDate>
+      <guid>//localhost:1313/blog/cuda/microarchitecture/instruction-encoding/</guid>
+      <description>&lt;h2 id=&#34;tldr&#34;&gt;TL;DR&lt;/h2&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;CPU out-of-order cores solve dependencies dynamically in hardware every cycle.&lt;/li&gt;&#xA;&lt;li&gt;NVIDIA GPUs push much of per-instruction dependency timing into compiler-generated metadata.&lt;/li&gt;&#xA;&lt;li&gt;In disassembly tools, this often appears as control information like wait masks, barrier indices, stall counts, yield hints, and reuse flags.&lt;/li&gt;&#xA;&lt;li&gt;The exact bit layout is architecture-dependent, but the mental model is stable: &lt;strong&gt;compiler pre-annotates hazards, warp scheduler executes cheaply.&lt;/strong&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;hr&gt;&#xA;&lt;h2 id=&#34;why-this-topic-matters&#34;&gt;Why This Topic Matters&lt;/h2&gt;&#xA;&lt;p&gt;When a kernel underperforms, we usually look at occupancy, memory coalescing, or instruction mix. But one layer lower, &lt;strong&gt;instruction encoding itself&lt;/strong&gt; influences how efficiently the SM can issue instructions from each warp.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>
