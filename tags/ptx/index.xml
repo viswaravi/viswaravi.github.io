@@ -18,5 +18,14 @@
 &lt;/ul&gt;
 &lt;hr&gt;
 &lt;h2 id="why-learn-sass-at-all"&gt;Why Learn SASS at All?&lt;/h2&gt;
-&lt;p&gt;If you only write CUDA C++, it is tempting to stop at source code and trust the compiler. That works until performance becomes mysterious.&lt;/p&gt;</description></item><item><title>CUDA Register Mapping: From PTX to SASS</title><link>/blog/cuda/microarchitecture/register-mapping/</link><pubDate>Fri, 15 May 2026 00:00:00 +0000</pubDate><guid>/blog/cuda/microarchitecture/register-mapping/</guid><description>&lt;h2 id="introduction"&gt;Introduction&lt;/h2&gt;
+&lt;p&gt;If you only write CUDA C++, it is tempting to stop at source code and trust the compiler. That works until performance becomes mysterious.&lt;/p&gt;</description></item><item><title>CUDA Instruction Encoding: Why SASS Carries Scheduling Metadata</title><link>/blog/cuda/microarchitecture/instruction-encoding/</link><pubDate>Fri, 15 May 2026 00:00:00 +0000</pubDate><guid>/blog/cuda/microarchitecture/instruction-encoding/</guid><description>&lt;h2 id="tldr"&gt;TL;DR&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;CPU out-of-order cores solve dependencies dynamically in hardware every cycle.&lt;/li&gt;
+&lt;li&gt;NVIDIA GPUs push much of per-instruction dependency timing into compiler-generated metadata.&lt;/li&gt;
+&lt;li&gt;In disassembly tools, this often appears as control information like wait masks, barrier indices, stall counts, yield hints, and reuse flags.&lt;/li&gt;
+&lt;li&gt;The exact bit layout is architecture-dependent, but the mental model is stable: &lt;strong&gt;compiler pre-annotates hazards, warp scheduler executes cheaply.&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h2 id="why-this-topic-matters"&gt;Why This Topic Matters&lt;/h2&gt;
+&lt;p&gt;When a kernel underperforms, we usually look at occupancy, memory coalescing, or instruction mix. But one layer lower, &lt;strong&gt;instruction encoding itself&lt;/strong&gt; influences how efficiently the SM can issue instructions from each warp.&lt;/p&gt;</description></item><item><title>CUDA Register Mapping: From PTX to SASS</title><link>/blog/cuda/microarchitecture/register-mapping/</link><pubDate>Fri, 15 May 2026 00:00:00 +0000</pubDate><guid>/blog/cuda/microarchitecture/register-mapping/</guid><description>&lt;h2 id="introduction"&gt;Introduction&lt;/h2&gt;
 &lt;p&gt;Register allocation is one of the critical aspects of GPU programming. On CPUs, the hardware&amp;rsquo;s &amp;ldquo;out-of-order&amp;rdquo; execution engine hides inefficiencies through register renaming, dynamically managing hundreds of physical registers behind 16 visible ones. GPUs work differently: &lt;strong&gt;what the compiler assigns is what actually runs&lt;/strong&gt;, with no dynamic safety net.&lt;/p&gt;</description></item></channel></rss>
