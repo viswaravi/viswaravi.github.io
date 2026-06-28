@@ -2169,6 +2169,44 @@ Conceptually yes, performance-wise no. On GPUs, local memory usually behaves muc
                 <article class="blog-list-card">
   
   
+
+
+  <div class="blog-list-content">
+    
+    
+      <p class="blog-list-categories">
+        
+          <a
+            href="../../../../categories/gpu-microarchitecture/"
+            class="taxonomy-inline-chip"
+            >Gpu microarchitecture</a
+          >
+        
+      </p>
+    
+
+
+    <h3 class="blog-list-title">
+      <a href="../../../../blog/cuda/microarchitecture/instruction-encoding/">CUDA Instruction Encoding: Why SASS Carries Scheduling Metadata</a>
+    </h3>
+
+    <p class="blog-list-summary">TL;DR CPU out-of-order cores solve dependencies dynamically in hardware every cycle. NVIDIA GPUs push much of per-instruction dependency timing into compiler-generated metadata. In disassembly tools, this often appears as control information like wait masks, barrier indices, stall counts, yield hints, and reuse flags. The exact bit layout is architecture-dependent, but the mental model is stable: compiler pre-annotates hazards, warp scheduler executes cheaply. Why This Topic Matters When a kernel underperforms, we usually look at occupancy, memory coalescing, or instruction mix. But one layer lower, instruction encoding itself influences how efficiently the SM can issue instructions from each warp.
+</p>
+
+    <div class="blog-list-footer">
+      <a class="blog-list-link" href="../../../../blog/cuda/microarchitecture/instruction-encoding/"
+        >Read More</a
+      >
+    </div>
+  </div>
+</article>
+
+              </div>
+            
+              <div class="lg:col-4 md:col-6 mb-14">
+                <article class="blog-list-card">
+  
+  
     <a class="blog-list-media" href="../../../../blog/cuda/microarchitecture/register-mapping/">
       
 
@@ -2279,44 +2317,6 @@ Conceptually yes, performance-wise no. On GPUs, local memory usually behaves muc
 
     <div class="blog-list-footer">
       <a class="blog-list-link" href="../../../../blog/cuda/microarchitecture/sass-basics/"
-        >Read More</a
-      >
-    </div>
-  </div>
-</article>
-
-              </div>
-            
-              <div class="lg:col-4 md:col-6 mb-14">
-                <article class="blog-list-card">
-  
-  
-
-
-  <div class="blog-list-content">
-    
-    
-      <p class="blog-list-categories">
-        
-          <a
-            href="../../../../categories/gpu-microarchitecture/"
-            class="taxonomy-inline-chip"
-            >Gpu microarchitecture</a
-          >
-        
-      </p>
-    
-
-
-    <h3 class="blog-list-title">
-      <a href="../../../../blog/cuda/microarchitecture/instruction-encoding/">CUDA Instruction Encoding: Why SASS Carries Scheduling Metadata</a>
-    </h3>
-
-    <p class="blog-list-summary">TL;DR CPU out-of-order cores solve dependencies dynamically in hardware every cycle. NVIDIA GPUs push much of per-instruction dependency timing into compiler-generated metadata. In disassembly tools, this often appears as control information like wait masks, barrier indices, stall counts, yield hints, and reuse flags. The exact bit layout is architecture-dependent, but the mental model is stable: compiler pre-annotates hazards, warp scheduler executes cheaply. Why This Topic Matters When a kernel underperforms, we usually look at occupancy, memory coalescing, or instruction mix. But one layer lower, instruction encoding itself influences how efficiently the SM can issue instructions from each warp.
-</p>
-
-    <div class="blog-list-footer">
-      <a class="blog-list-link" href="../../../../blog/cuda/microarchitecture/instruction-encoding/"
         >Read More</a
       >
     </div>
