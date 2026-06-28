@@ -2187,14 +2187,14 @@ Conceptually yes, performance-wise no. On GPUs, local memory usually behaves muc
 
 
     <h3 class="blog-list-title">
-      <a href="../../../../blog/cuda/microarchitecture/instruction-encoding/">CUDA Instruction Encoding: Why SASS Carries Scheduling Metadata</a>
+      <a href="../../../../blog/cuda/microarchitecture/sass-basics/">CUDA SASS: Learning to Read NVIDIA&#39;s Native GPU ISA</a>
     </h3>
 
-    <p class="blog-list-summary">TL;DR CPU out-of-order cores solve dependencies dynamically in hardware every cycle. NVIDIA GPUs push much of per-instruction dependency timing into compiler-generated metadata. In disassembly tools, this often appears as control information like wait masks, barrier indices, stall counts, yield hints, and reuse flags. The exact bit layout is architecture-dependent, but the mental model is stable: compiler pre-annotates hazards, warp scheduler executes cheaply. Why This Topic Matters When a kernel underperforms, we usually look at occupancy, memory coalescing, or instruction mix. But one layer lower, instruction encoding itself influences how efficiently the SM can issue instructions from each warp.
+    <p class="blog-list-summary">TL;DR SASS is the real instruction stream executed by NVIDIA GPUs. PTX is not the final hardware ISA. It is a virtual ISA that ptxas lowers into architecture-specific SASS. The main things to learn first are: opcodes, registers, predicates, loads/stores, special registers, and modifiers. SASS is where you see performance-critical details that source code hides: final opcode selection, register usage, spills, and memory instructions. If PTX tells you the compiler&rsquo;s intent, SASS tells you what the GPU will actually issue. Why Learn SASS at All? If you only write CUDA C++, it is tempting to stop at source code and trust the compiler. That works until performance becomes mysterious.
 </p>
 
     <div class="blog-list-footer">
-      <a class="blog-list-link" href="../../../../blog/cuda/microarchitecture/instruction-encoding/"
+      <a class="blog-list-link" href="../../../../blog/cuda/microarchitecture/sass-basics/"
         >Read More</a
       >
     </div>
@@ -2309,14 +2309,14 @@ Conceptually yes, performance-wise no. On GPUs, local memory usually behaves muc
 
 
     <h3 class="blog-list-title">
-      <a href="../../../../blog/cuda/microarchitecture/sass-basics/">CUDA SASS: Learning to Read NVIDIA&#39;s Native GPU ISA</a>
+      <a href="../../../../blog/cuda/microarchitecture/instruction-encoding/">CUDA Instruction Encoding: Why SASS Carries Scheduling Metadata</a>
     </h3>
 
-    <p class="blog-list-summary">TL;DR SASS is the real instruction stream executed by NVIDIA GPUs. PTX is not the final hardware ISA. It is a virtual ISA that ptxas lowers into architecture-specific SASS. The main things to learn first are: opcodes, registers, predicates, loads/stores, special registers, and modifiers. SASS is where you see performance-critical details that source code hides: final opcode selection, register usage, spills, and memory instructions. If PTX tells you the compiler&rsquo;s intent, SASS tells you what the GPU will actually issue. Why Learn SASS at All? If you only write CUDA C++, it is tempting to stop at source code and trust the compiler. That works until performance becomes mysterious.
+    <p class="blog-list-summary">TL;DR CPU out-of-order cores solve dependencies dynamically in hardware every cycle. NVIDIA GPUs push much of per-instruction dependency timing into compiler-generated metadata. In disassembly tools, this often appears as control information like wait masks, barrier indices, stall counts, yield hints, and reuse flags. The exact bit layout is architecture-dependent, but the mental model is stable: compiler pre-annotates hazards, warp scheduler executes cheaply. Why This Topic Matters When a kernel underperforms, we usually look at occupancy, memory coalescing, or instruction mix. But one layer lower, instruction encoding itself influences how efficiently the SM can issue instructions from each warp.
 </p>
 
     <div class="blog-list-footer">
-      <a class="blog-list-link" href="../../../../blog/cuda/microarchitecture/sass-basics/"
+      <a class="blog-list-link" href="../../../../blog/cuda/microarchitecture/instruction-encoding/"
         >Read More</a
       >
     </div>
